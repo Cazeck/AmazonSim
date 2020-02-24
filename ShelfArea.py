@@ -1,17 +1,114 @@
 
 from Shelf import Shelf
+from Point import Point
+from Cell import Cell
+from Robot import Robot
 
 # Shelf area has information where every shelf is at all times
 # is also used to create and shelves
 
 class ShelfArea:
 
-    def __init__(self):
-        self.allShelves = []
+    # Original init for testing
+    #def __init__(self):
+    #    self.allShelves = []  # from Original testing section
 
+    # New values to work on for actually having a floor implemented
+    def __init__(self, corner, width, rand):
+        self.areacontents = [] # list of cells
+        self.randomsource = rand # rand
+        self.corner = Point(corner.x, corner.y) # Lower left corner of shelf area
+        self.width = width
+
+        # Trying to build the shelve area cells
+        for i in range(corner.y, corner.y + 2):
+            #print(i)
+            #print("i")
+            for j in range(corner.x, corner.x + width):
+                #print(j)
+                cellToAdd = Cell(Point(j, i))
+                self.areacontents.append(cellToAdd)
+
+        self.populate()
+
+    def getCorner(self):
+        return self.corner
+
+    # Returns int of Width
+    def getWidth(self):
+        return self.getWidth()
+
+    # Returns int of 2 (Height will always be 2)
+    def getHeight(self):
+        return 2
+
+    # Return a point if it is within the shelf area
+    def getCell(self, point):
+        for i in self.areacontents:
+            if i.x == point.x and i.y == point.y:
+                return i
+
+        return None # No Point found
+
+    # Fills the ShelfArea with shelf objects in each cell
+    # Will be called by the constructor
+    def populate(self):
+        number = 0
+        for i in self.areacontents:
+            number += 1
+            # Every Cell gets a Shelf added to it
+            i.setContents(Shelf(number, i))
+
+    # Returns a boolean if point is within ShelfArea
+    def hasWithin(self, point):
+        if point.x < self.corner.x:
+            return False
+
+        if point.x >= self.corner.x + self.width:
+            return False
+
+        if point.y < self.corner.y :
+            print(self.corner.y)
+            return False
+
+        if point.y > self.corner.y + 1:
+            return False
+
+        return True
+
+    # Check to see if a cell within the Shelf Area is currently occupied by an object
+    # return true has something within it (Robot or Shelf)
+    def occupied(self, cell):
+        if self.hasWithin(cell) and cell.getContents() is not None:
+            return True
+
+        return False
+
+    # Finish when random is completed
+    # Returns a random point within the ShelfArea
+    def randomPoint(self):
+        #column = randomsource.nextInt(width)
+        #row = randomsource.nextInt(2)
+        #point = Point(self.corner.x + column, self.corner.y - row)
+        #assert self.hasWithin(point)
+        #return point
+        return None
+
+    # Places an object within a cell
+    # If Object is None, makes the cell empty
+    def setContent(self, cell, object):
+        if not self.occupied(cell) and self.hasWithin(cell):
+            cell.setContents(object)
+
+    # Original ShelfArea for testing
+    def addShelve(self, shelf):
+        self.allShelves.append(shelf)
+
+    # Original ShelfArea for testing
     def numberOfShelves(self):
         return len(self.allShelves)
 
+    # Original ShelfArea for testing
     # Finds a shelf with its number
     def findShelf(self, shelfNo):
         for i in self.allShelves:
@@ -19,6 +116,7 @@ class ShelfArea:
                 return i
         return None  # item not found with matching serial
 
+    # Original ShelfArea for testing
     def findShelfWithSpace(self):
         for i in self.allShelves:
             if len(i.shelfStock) < i.maxItems:
@@ -29,8 +127,10 @@ class ShelfArea:
                 #print('This shelf is full, checking another')
                 continue
 
-    def addShelve(self, shelf):
-        self.allShelves.append(shelf)
 
 
 
+
+#sArea = ShelfArea(Point(0,0), 5, 1) # Creates a 5 x 2 Grid for the shelf area
+
+#print(sArea.areacontents)
