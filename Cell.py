@@ -25,9 +25,13 @@ class Cell(Point):
     def setContents(self, object):
         self.content = object
 
+    def __repr__(self):
+        return "Cell('{}', '{}', {})".format(self.x, self.y, self.content)
 
     def __str__(self):
-        result = super.__str__(self)
+        #result = super.__str__(self)
+
+        result = "Cell x:{} y:{}".format(self.x, self.y)
 
         if isinstance(self.content, Shelf):
             result += " contains Shelf"
@@ -37,6 +41,8 @@ class Cell(Point):
             result += " contains Robot"
             return result
 
+        result += " contains Nothing"
+        return result
         # Might need a clone funct for visualizer
 
 
@@ -51,5 +57,7 @@ class Cell(Point):
 
 #print(point2.below())
 #cell1.setContents(shelf1)
+#print(cell1.content)
+#print(cell1.x)
 
 #print(cell1)
