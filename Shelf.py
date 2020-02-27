@@ -17,7 +17,7 @@ class Shelf:
         Shelf.numofshelves += 1
 
     # Adds an item onto the shelf, check number of times on shelf to not overflow
-    def push(self, item):
+    def addItem(self, item):
         if len(self.shelfStock) == self.maxItems:
             # Not sure what to do here yet, but need to not add the item and try to find a new shelf
             print('This shelf is full: Cannot put this item here')
@@ -27,7 +27,18 @@ class Shelf:
             self.shelfStock.append(item)
             # Give an item it's shelf number here
 
-    # Need a pop?
+    def removeItem(self, item):
+        self.shelfStock.remove(item)
+
+    # If a item with matching name is on shelf, return it
+    def findItem(self, name):
+        for item in self.shelfStock:
+            if name == item.itemName:
+                return item
+
+
+    def getShelfNo(self):
+        return self.shelfNumber
 
     def onShelf(self):
         return self.shelfStock

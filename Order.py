@@ -17,6 +17,9 @@ class Order:
     def updateStatus(self, newstatus):
         self.status = newstatus
 
+    def getStatus(self):
+        return self.status
+
     def isFilled(self):
         #ind = 0
 
@@ -50,9 +53,10 @@ class Order:
     def ship(self):
         self.shipped = True     # Order fully completed, can be deleted / removed now
 
+    # Adds item to collected if it matched the name of the current item in the order list
     def addItem(self, newitem):
         grabbeditems = len(self.collected)
-        if newitem.getItemName == self.orderitems[grabbeditems].getItemName:
+        if newitem.getItemName() == self.orderitems[grabbeditems]:
             self.collected.append(newitem)
 
         else:
@@ -67,28 +71,28 @@ class Order:
     # Item('Bong', 67090, 4)
 
     def __repr__(self):
-        return "| Order('{}', '{}', {}, {}, {})".format(self.orderid, self.shipaddr, self.status, self.orderitems, self.collected)
+        return "Order('{}', {}, {}, {})".format(self.shipaddr, self.status, self.orderitems, self.collected)
 
     # readable representation of an object, used for display to end users
     # Item: Hydras Lament - Serial No: 11008 - Shelf: None
 
     def __str__(self):
-        return '| OrderId: {} -  Address: {} - Status: {}  \n| Order:     {} \n| Collected: {}'.format(self.orderid, self.shipaddr, self.status, self.orderitems, self.collected)
+        return '|Address: {} - Status: {}  \n| Order:     {} \n| Collected: {}'.format(self.orderid, self.shipaddr, self.status, self.orderitems, self.collected)
 
 
-item1 = Item('Bagpipe', 51009)
-item2 = Item('Tic-Tac', 57678)
-item3 = Item('Hydras Lament', 11008)
-item4 = Item('Socks', 13009)
-item5 = Item('Puck', 34678)
-item6 = Item('Shifters Shield', 81035)
-item7 = Item('Tic-Tac', 57678)
-item8 = Item('Singular Orange', 34231)
+#item1 = Item('Bagpipe', 51009)
+#item2 = Item('Tic-Tac', 57678)
+#item3 = Item('Hydras Lament', 11008)
+#item4 = Item('Socks', 13009)
+#item5 = Item('Puck', 34678)
+#item6 = Item('Shifters Shield', 81035)
+#item7 = Item('Tic-Tac', 57678)
+#item8 = Item('Singular Orange', 34231)
 
-orderList1 = [item1, item3, item5]
-orderList2 = [item2, item4, item6]
+#orderList1 = [item1, item3, item5]
+#orderList2 = [item2, item4, item6]
 
-order = Order(orderList1, '104 Meme Avenue')
+#order = Order(orderList1, '104 Meme Avenue')
 
 #print('orderitems')
 #print(order.orderitems)
@@ -96,19 +100,19 @@ order = Order(orderList1, '104 Meme Avenue')
 #print('collected')
 #print(order.collected)
 
-order.addItem(item1)
+#order.addItem(item1)
 
 #print('collected')
 #print(order.collected)
 
 #order.addItem(item2)
-order.addItem(item3)
+#order.addItem(item3)
 
 #print(order.collected)
 #print(order.isFilled())
 
 
-order.addItem(item5)
+#order.addItem(item5)
 
 #print(order.isFilled())
 

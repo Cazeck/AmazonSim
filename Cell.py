@@ -17,6 +17,10 @@ class Cell(Point):
         self.y = point.y
         content = None
 
+    # Returns location of Cell (Point Object)
+    def cellLocation(self):
+        return Point(self.x, self.y)
+
     # Returns whats currently in the cell
     def getContents(self):
         return self.content

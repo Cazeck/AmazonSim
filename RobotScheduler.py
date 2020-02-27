@@ -7,6 +7,8 @@ class RobotScheduler:
         self.robotList = []
         self.availableRobots = []
 
+        self.populate()
+
     # Returns total number of robots in RobotScheduler
     def numberOfRobots(self):
         return len(self.robotList)
@@ -23,7 +25,7 @@ class RobotScheduler:
         return None  # item not found with matching name
 
     # Find all robots that are currently idle
-    def findAvailableRobots(self):
+    def idleRobots(self):
         for i in self.robotList:
             if i.status == 0:
                 self.availableRobots.append(i)
@@ -31,6 +33,25 @@ class RobotScheduler:
                 continue  # this robot is busy, check another
 
         return self.availableRobots
+
+    # Returns first available robot in list
+    def findAvailableRobot(self):
+        return self.availableRobots[0]
+
+    # sendRobot?  which finds an available robot and then sends it to that location with pathing coordinates
+
+    def populate(self):
+        startPoint1 = Point(1, 2)
+        startPoint2 = Point(7, 8)
+        startPoint3 = Point(4, 4)
+        startPoint4 = Point(6, 2)
+
+        robos = [Robot('A', startPoint1), Robot('B', startPoint2), Robot('C', startPoint3),   Robot('D', startPoint4) ]
+
+        for i in robos:
+            self.robotList.append(i)
+
+    # CAN BE REMOVED FROM HERE WHEN IT IS TESTED TO WORK WITHIN FLOOR
 
     # Maps a path from the robots current location to the endPoing
     # Will later make sure it doesn't run into anything
@@ -46,7 +67,7 @@ class RobotScheduler:
         distanceLR = robot.location.x - endpoint.x
 
         if distanceLR < 0:
-            print("We need to move " + str(abs(distanceLR)) + " units Right")
+            #print("We need to move " + str(abs(distanceLR)) + " units Right")
 
             for i in range(abs(distanceLR)):
                 nextX = robot.location.x + (i + 1)
@@ -56,7 +77,7 @@ class RobotScheduler:
                 #print(pathX)
 
         if distanceLR > 0:
-            print("We need to move " + str(abs(distanceLR)) + " units Left")
+            #print("We need to move " + str(abs(distanceLR)) + " units Left")
 
             for i in range(abs(distanceLR)):
                 nextX = robot.location.x - (i + 1)
@@ -69,7 +90,7 @@ class RobotScheduler:
         distanceUD = robot.location.y - endpoint.y
 
         if distanceUD < 0:
-            print("We need to move " + str(abs(distanceUD)) + " units Up")
+            #print("We need to move " + str(abs(distanceUD)) + " units Up")
 
             for i in range(abs(distanceUD)):
                 # Use endpoint.x here because we already have pathed out final x location
@@ -80,7 +101,7 @@ class RobotScheduler:
                 #print(pathY)
 
         if distanceUD > 0:
-            print("We need to move " + str(abs(distanceUD)) + " units Down")
+            #print("We need to move " + str(abs(distanceUD)) + " units Down")
 
             for i in range(abs(distanceUD)):
                 # Use endpoint.x here because we already have pathed out final x location

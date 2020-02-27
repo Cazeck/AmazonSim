@@ -3,6 +3,7 @@ from Shelf import Shelf
 from Point import Point
 from Cell import Cell
 from Robot import Robot
+from SimRandom import SimRandom
 
 # Shelf area has information where every shelf is at all times
 # is also used to create and shelves
@@ -14,9 +15,9 @@ class ShelfArea:
     #    self.allShelves = []  # from Original testing section
 
     # New values to work on for actually having a floor implemented
-    def __init__(self, corner, width, rand):
+    def __init__(self, corner, width):
         self.areacontents = [] # list of cells
-        self.randomsource = rand # rand
+        self.randomsource = 1 # SimRandom Object for deterministic randomness
         self.corner = Point(corner.x, corner.y) # Lower left corner of shelf area
         self.width = width
 
@@ -68,7 +69,6 @@ class ShelfArea:
             return False
 
         if point.y < self.corner.y :
-            print(self.corner.y)
             return False
 
         if point.y > self.corner.y + 1:
@@ -84,15 +84,13 @@ class ShelfArea:
 
         return False
 
-    # Finish when random is completed
     # Returns a random point within the ShelfArea
     def randomPoint(self):
-        #column = randomsource.nextInt(width)
-        #row = randomsource.nextInt(2)
-        #point = Point(self.corner.x + column, self.corner.y - row)
-        #assert self.hasWithin(point)
-        #return point
-        return None
+        column = self.randomsource.randint(self.width)
+        row = self.randomsource.randint(2)
+        point = Point(self.corner.x + column, self.corner.y + row)
+        assert self.hasWithin(point) # Make sure that this point is within, otherwise throw error
+        return point
 
     # Places an object within a cell
     # If Object is None, makes the cell empty
@@ -100,37 +98,48 @@ class ShelfArea:
         if not self.occupied(cell) and self.hasWithin(cell):
             cell.setContents(object)
 
-    # Original ShelfArea for testing
-    def addShelve(self, shelf):
-        self.allShelves.append(shelf)
+    # Returns shelf with matching No
+    def findShelf(self, shelfNo):
+        # For each cell in
+        for i in self.areacontents:
+            if i.getContents().getShelfNo() == shelfNo:
+                #print("Found shelf at")
+                #print(i.getContents())
+                return i.getContents()
 
     # Original ShelfArea for testing
-    def numberOfShelves(self):
-        return len(self.allShelves)
+    #def addShelve(self, shelf):
+    #    self.allShelves.append(shelf)
+
+    # Original ShelfArea for testing
+    #def numberOfShelves(self):
+    #    return len(self.allShelves)
 
     # Original ShelfArea for testing
     # Finds a shelf with its number
-    def findShelf(self, shelfNo):
-        for i in self.allShelves:
-            if shelfNo == i.shelfNumber:
-                return i
-        return None  # item not found with matching serial
+    #def findShelf(self, shelfNo):
+    #    for i in self.allShelves:
+    #        if shelfNo == i.shelfNumber:
+    #            return i
+    #    return None  # item not found with matching serial
 
     # Original ShelfArea for testing
-    def findShelfWithSpace(self):
-        for i in self.allShelves:
-            if len(i.shelfStock) < i.maxItems:
-                #print('This shelf is not full, returning')
-                return i
+    #def findShelfWithSpace(self):
+    #    for i in self.allShelves:
+    #        if len(i.shelfStock) < i.maxItems:
+    #            #print('This shelf is not full, returning')
+    #            return i
 
-            else:
-                #print('This shelf is full, checking another')
-                continue
-
-
+    #        else:
+    #            #print('This shelf is full, checking another')
+    #            continue
 
 
 
-#sArea = ShelfArea(Point(0,0), 5, 1) # Creates a 5 x 2 Grid for the shelf area
+
+
+#sArea = ShelfArea(Point(0,0), 5, SimRandom()) # Creates a 5 x 2 Grid for the shelf area
 
 #print(sArea.areacontents)
+
+#print(sArea.randomPoint())

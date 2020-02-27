@@ -9,11 +9,10 @@ class Robot:
     pickershelfbound = 1
     pickerbound = 2
     atpicker = 3
-    afterpickershelfbound = 4
-    dockshelfbound = 5
-    atdock = 7
-    afterdockshelfbound = 8
-    chargerbound = 9
+    shelfhomebound = 4
+    shelfhomelocation = 5
+    chargerbound = 6
+    atcharger = 7
 
     def __init__(self, name, startinglocation):
         self.location = startinglocation
@@ -39,6 +38,12 @@ class Robot:
     def getStatus(self):
         return self.status
 
+    def pickUpShelf(self, shelf):
+        self.holdingShelf = shelf
+
+    def putDownShelf(self, shelf):
+        self.holdingShelf = None
+
     # Return the shelf that it is currently holding
     def getholdingShelf(self):
         return self.holdingShelf
@@ -56,13 +61,13 @@ class Robot:
     # to move the robot by one point
     def moveByOne(self):
         if self.destination != []:
-            print("| Moving from: " + str(self.location) + " To: " + str(self.destination[0]))
+            #print("| Moving from: " + str(self.location) + " To: " + str(self.destination[0]))
             self.location = self.destination[0]     # Get next point in the list
             del self.destination[0]                 # Remove first point in the list
-            #self.destination = self.destination[:]             # remove first point in the list
 
         else:
             print("Robot is already at destination!")
+
     # Will tell the robot to start heading to a new destination
     def goToDest(self):
         #self.destination = newDest

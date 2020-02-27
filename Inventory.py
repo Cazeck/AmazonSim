@@ -1,11 +1,13 @@
 from ShelfArea import ShelfArea
 from Shelf import Shelf
+from Item import Item
 
 class Inventory:
     # Create a list with all stocked items in it
     def __init__(self):
         self.stock = []
 
+        self.populate()
     # Adds an item to the stock
     # item = the item to add
     ## Do I assign a shelf here?
@@ -53,9 +55,19 @@ class Inventory:
         for i in self.stock:
             if iName == i.getItemName():
                 return i.getShelf()
-        return None      # item not found with matching serial
+        return None      # item not found with matching name
 
 
+    def populate(self):
+        # Creates a variety of items and then adds them to random shelves
+        testitems = [Item('Bagpipe', 51009), Item('Tic-Tac', 57678), Item('Hydras Lament', 11008), Item('Socks', 13009),
+                     Item('Puck', 34678), Item('Shifters Shield', 81035), Item('Tic-Tac', 57678), Item('Singular Orange', 34231)]
 
+        # Add the Items into Stock
+        for i in testitems:
+            self.stock.append(i)
+
+        # Do we now distribute this across shelves in Master
+        # in Master
     # Method for tick? not exactly sure how this will work out at the moment
 

@@ -15,8 +15,6 @@ class Floor:
     receivingdock = Point(80, 0)
     charger = Point(20, 20)
 
-
-
     def __init__(self, rand):   # input value of rand for deterministic testing
         self.randogen = rand    # seed for random generation
         self.allpoints = {}     #  A Map of <String, Cell> for all points on the floor each cell is one "square" on floor
@@ -78,15 +76,78 @@ class Floor:
             beltarea.add(Point(i,0))
         return beltarea
 
-    # Steal the getPath from RobotController, its better off here
-    def getPath(self):
-        return None
-
     def getNumShelfAreas(self):
         return len(self.shelfareas)
 
     def getShelfArea(self, number):
         return self.shelfareas[number]
+
+    # Steal the getPath from RobotController, its better off here
+
+    # Maps a path from the startPoint to the endPoint
+    # Will later make sure it doesn't run into anything
+    # returns a list of points (the path the robot will take)
+    def getPath(self, startpoint, endpoint):
+        pathX = []
+        pathY = []
+
+        # We will do move Left/Right first (X)
+        # Then move Up/Down after (Y)
+
+        # Calculate whether or not we need to Left or Right
+        distanceLR = startpoint.x - endpoint.x
+
+        if distanceLR < 0:
+            print("We need to move " + str(abs(distanceLR)) + " units Right")
+
+            for i in range(abs(distanceLR)):
+                nextX = startpoint.x + (i + 1)
+                currentY = startpoint.y
+                # Only moving L/R so Y stays the same
+                pathX.append(Point(nextX, currentY))
+                # print(pathX)
+
+        if distanceLR > 0:
+            print("We need to move " + str(abs(distanceLR)) + " units Left")
+
+            for i in range(abs(distanceLR)):
+                nextX = startpoint.x - (i + 1)
+                currentY = startpoint.y
+                # Only moving L/R so Y stays the same
+                pathX.append(Point(nextX, currentY))
+                # print(pathX)
+
+        # Calculate whether or not we need to Up or Down
+        distanceUD = startpoint.y - endpoint.y
+
+        if distanceUD < 0:
+            print("We need to move " + str(abs(distanceUD)) + " units Up")
+
+            for i in range(abs(distanceUD)):
+                # Use endpoint.x here because we already have pathed out final x location
+                currentX = endpoint.x
+                nextY = startpoint.y + (i + 1)
+                # Only moving U/D so X stays the same
+                pathY.append(Point(currentX, nextY))
+                # print(pathY)
+
+        if distanceUD > 0:
+            print("We need to move " + str(abs(distanceUD)) + " units Down")
+
+            for i in range(abs(distanceUD)):
+                # Use endpoint.x here because we already have pathed out final x location
+                currentX = endpoint.x
+                nextY = startpoint.y - (i + 1)
+                # Only moving U/D so X stays the same
+                pathY.append(Point(currentX, nextY))
+                # print(pathY)
+
+        # Combine the two Paths, X steps first then Y steps
+        fullPath = pathX + pathY
+
+        return fullPath
+
+
 
     # Returns some random point within a randomly chosen shelfarea
     # might be useful for product distribution on shelves, returning a shelf to the shelf area, etc
@@ -94,14 +155,14 @@ class Floor:
         s = self.randogen.randint(len(self.shelfareas))
         return self.shelfareas[s].randomPoint()
 
-floor = Floor(SimRandom())
+#floor = Floor(SimRandom())
 
-print(floor.shelfareas)
+#print(floor.shelfareas)
 
 #for i in floor.allpoints:
     #print(i)
     #print(floor.allpoints[i])
 
-print(floor.getCell(Point(10,10)))
+#print(floor.getCell(Point(10,10)))
 
-print(floor.randomShelfArea())
+#print(floor.randomShelfArea())
