@@ -1,8 +1,8 @@
-import simpy
+from queue import PriorityQueue
 import random
 
 from Floor import Floor
-
+from SimRandom import SimRandom
 from Item import Item
 from Shelf import Shelf
 
@@ -18,431 +18,289 @@ from OrderControl import OrderControl
 from RobotScheduler import RobotScheduler
 from Robot import Robot
 
-# Test Instances of Areas
-sArea = ShelfArea(Point(0,0), 5) # Creates a 5 x 2 Grid for the shelf area
-inv = Inventory()
+class Master:
+
+    # Create an instance of all components and create the priority queue to store Events
+    def __init__(self):
+        self.count = 0
+
+        self.robot = tRobot(self)
+        self.floor = tFloor(self)
+        self.belt = tBelt(self)
+        self.inventory = tInventory(self)
+        self.order = tOrder(self)
+        self.visualizer = tVisualizer(self)
+        self.eventqueue = PriorityQueue()
+
+        # Going to need to make Test Classes in Master first to figure eventqueue out
+        #self.floor = Floor()
+        #self.robotscheduler = RobotScheduler()
+        #self.inventory = Inventory()
+        #self.ordercontrol = OrderControl()
+        # Belt
+        # Visualizer
+        # Comparator
+        #self.eventqueue = PriorityQueue()
 
-# Need to distribute stock to the shelves we generated (Randomly works fine)
 
-for i in inv.stock:
-    #print(random.choice(sArea.areacontents).getContents())
-    # Add the item to a random shelf in ShelfArea
-    randomShelf = random.choice(sArea.areacontents).getContents()
+    def createEvents(self):
+        print("Enqueued Initial Events for for each section")
+        self.robot.enqueue('Initial robot event')
+        self.floor.enqueue('Initial floor event')
+        self.belt.enqueue('Initial belt event')
+        self.inventory.enqueue('Initial inventory event')
+        self.order.enqueue('Initial order event')
+        self.visualizer.enqueue('Initial visualizer event')
 
-    randomShelf.addItem(i)
-    print("Adding " + str(i) + " to Shelf " + str(randomShelf.getShelfNo()))
-    i.changeShelf(randomShelf.getShelfNo())
+    def tickCount(self):
+        self.robot.tick(self.count)
+        self.floor.tick(self.count)
+        self.belt.tick(self.count)
+        self.inventory.tick(self.count)
+        self.order.tick(self.count)
+        self.visualizer.tick(self.count)
 
-    #random.choice(sArea.areacontents).getContents().addItem(i)
+    # Return the current time it is
+    def getCount(self):
+        return self.count
 
-#print(sArea.areacontents[0].content)
-print('\nItems added to Shelves')
+    # Increase the Time by one unit
+    def increaseCount(self):
+        self.count += 1
 
-rSched = RobotScheduler()
+    # Look at the head of the Priority Queue without removing the Event
+    # this probably wont work
+    def peek(self):
+        q = self.eventqueue.queue
+        if not q:
+            return None
 
-print('Robots Created')
+        return q[0]
 
-oControl = OrderControl()
+    # Add to the PriorityQueue as (Tick, number, Event)
+    def enqueue(self, event):
+        # Event number is simply to prevent Priority Queue from comparing
+        # Events to each other if queue events are happening on same tick
+        toQueue = (event.getTime(), event.number,  event)
+        self.eventqueue.put(toQueue)
 
-print("Order Control Created")
-print("\nOrders")
-print(oControl.allOrders)
+    # Remove next Event in PriorityQueue
+    def dequeue(self):
+        return self.eventqueue.get()
 
-ord1 = oControl.allOrders[0]
 
-ord1.updateStatus("In Progress")
 
+# Will be used by the components to create events that need to be completed
+class Event:
 
-rSched.idleRobots()
+    totalevents = 0
 
+    def __init__(self, tick, arg, who):
+        self.count = tick       # Time that the event was called
+        self.argument = arg     # Argument passed by Component
+        self.caller = who       # Who (Component) created the Event
+        self.number = Event.totalevents + 1    # Done to give each event a unique number
+        Event.totalevents += 1
 
+    def getTime(self):
+        return self.count
 
-for item in ord1.orderitems:
-    print("\nItem:")
-    print(item)
+    def getArgument(self):
+        return self.argument
 
-    if inv.numberInStockName(item) > 0:
-        itemlocation = inv.findItemName(item)
-        print("Shelf Item is on:")
-        print(itemlocation)
+    def getWhoCalled(self):
+        return self.caller
 
-        # Now that we have which shelf it is on, we need to ask shelfArea where it is
-        shelf = sArea.findShelf(itemlocation)
-        print("\nShelf is located at:")
-        print(shelf.currentLocation)
+    def fire(self, argument):
+        # Can be the fire method from any of the components, so argument is component?
+        print("Firing:", argument)
+        #master.enqueue(newEvent)
+        #print("Belt event happened at:", self.master.getCount())
+        # self.argument
+        # self.enqueue("Belt event happened at: ")
 
-        # Then ask Robot Scheduler to send an available robot to that location
-        robotToUse = rSched.findAvailableRobot()
-        print("\nRobot is ready to use")
-        print(robotToUse)
+        # Can invoke Master.enqueue(newEvent) to add another (future) event
 
-        # Calculating path for robot to take to get to that shelf
-        robotPath = rSched.mapDestination(robotToUse, shelf.currentLocation.cellLocation())
-        robotToUse.setDestination(robotPath)
-        print("\nRobot has path added to shelf added")
-        print(robotToUse.destination)
+    def __repr__(self):
+        return "Event('{}', '{}', {})".format(self.count, self.argument, self.caller)
 
-        # Now we need to make that robot move to the shelf
-        robotToUse.setState(1) #PickerShelf Bound
-        rSched.availableRobots.remove(robotToUse)  # Remove first robot from availability
+    def __str__(self):
+        return 'Event | Tick: {} -  Argument: {} - Called By: {}'.format(self.count, self.argument, self.caller)
 
-        # Move the robot to Shelf
-        for num in range(0, len(robotToUse.destination)):
-            #print("We hav this many steps")
-            #print(robotToUse.destination)
-            #print(len(robotToUse.destination))
-            robotToUse.moveByOne()
-        print("Moving to shelf")
-        print("\nRobot is at Shelf Location")
-        print(robotToUse.getLocation())
 
+# TEST CLASSES TO BE USED FOR FIGURING OUT HOW QUEUE WILL WORK
+# Everything will need tickable and task to be added to it
 
-        # Now that we are at the shelf, we need to pick it up and bring it to the picker's destination
-        print("\npicking up shelf")
-        robotToUse.pickUpShelf(shelf)
-        print(robotToUse.holdingShelf)
+class tBelt:
 
-        #picked up, now move to picker's location (updating both of the the items locations as we bgo
+    def __init__(self, master):
+        self.master = master
+        self.currentTime = None
 
-        # Find pickers location
-        # for now its this point
-        pickerLoc = Point(20, 20)
+        self.currentBins = []
 
-        # Recalculate the path
-        robotPath = rSched.mapDestination(robotToUse, pickerLoc)
-        robotToUse.setDestination(robotPath)
-        print("\nRobot has path to Picker added")
 
-        # Move there
-        robotToUse.setState(2)
-        for num in range(0, len(robotToUse.destination)):
-            # Can maybe throw an if into moveByOne that checks to see if there
-            # is a shelf on robot and update location
-            robotToUse.moveByOne()
-            robotToUse.holdingShelf.currentLocation = robotToUse.location
+    def tick(self, count):
+        self.currentTime = count
 
-        print("Moving with Shelf")
-        print("\nRobot is at picker Location")
-        print(robotToUse.getLocation())
-        robotToUse.setState(3)
+    def fire(self, argument):
+        print("Belt event happened at:", self.master.getCount())
+        #self.argument
+        #self.enqueue("Belt event happened at: ")
 
-        print("Shelf Location")
-        print(robotToUse.holdingShelf)
+        # Can invoke Master.enqueue(newEvent) to add another (future) event
 
-        # Now that we are at the picking station, remove the item from the shelf,
-        # and add it to the collected for Order (We are ignoring Bin for the moment)
-        # Picker Obj?
+    def enqueue(self, argument):
+        event = Event(self.currentTime + 1, argument, self)
+        self.master.enqueue(event)
 
-        # Check if correct item (By Name)
-        itemFromShelf = robotToUse.holdingShelf.findItem(item)
-        itemFromShelf.changeShelf(None)
-        # Item from shelf is put into collected
-        ord1.addItem(itemFromShelf)
+    def addBin(self, bin):
+        self.currentBins.append(bin)
 
-        # Remove item from shelf
-        robotToUse.holdingShelf.removeItem(itemFromShelf)
+class tFloor:
 
-        print("\nIn Bin:")
-        print(ord1.collected)
+    def __init__(self, master):
+        self.master = master
+        self.currentTime = None
 
-        print("Shelf status")
-        print(robotToUse.holdingShelf)
+    def tick(self, count):
+        self.currentTime = count
 
-        # Now that the item is in the bin, we return the shelf back to its location
-        # and then also move the robot back
+    def fire(self, argument):
+        print("Floor event happened at:", self.master.getCount())
+        run = argument
+        #self.enqueue("Floor event happened at: ")
 
-        robotPath = rSched.mapDestination(robotToUse, robotToUse.holdingShelf.homeLocation)
-        robotToUse.setDestination(robotPath)
-        print("\nRobot has path to Shelf Home Location added")
-        robotToUse.setState(4)
-        print("Bringing Shelf back")
-        for num in range(0, len(robotToUse.destination)):
-            # Can maybe throw an if into moveByOne that checks to see if there
-            # is a shelf on robot and update location
-            robotToUse.moveByOne()
-            robotToUse.holdingShelf.currentLocation = robotToUse.location
+    def enqueue(self, argument):
+        event = Event(self.currentTime + 4, argument, self)
+        self.master.enqueue(event)
 
-        print("\nRobot is at Shelf Home")
-        print(robotToUse.getLocation())
+class tInventory:
 
+    def __init__(self, master):
+        self.master = master
+        self.currentTime = None
 
-        print("Shelf Location (Should match Home)")
-        print(robotToUse.holdingShelf)
+    def tick(self, count):
+        self.currentTime = count
 
-        print("Dropping off shelf")
-        robotToUse.putDownShelf(robotToUse.holdingShelf)
+    def fire(self, argument):
+        print("Inventory event happened at:", self.master.getCount())
+        run = argument
+        #self.enqueue("Inventory event happened at: ")
 
-        robotToUse.setState(6)
-        print(robotToUse)
-        print("Robot Heading to charger")
+    def enqueue(self, argument):
+        event = Event(self.currentTime + 6, argument, self)
+        self.master.enqueue(event)
 
-        chargerLoc = Point(0,20)
+class tOrder:
 
-        # Recalculate the path
-        robotPath = rSched.mapDestination(robotToUse, chargerLoc)
-        robotToUse.setDestination(robotPath)
-        print("\nRobot has path to Charger added")
+    def __init__(self, master):
+        self.master = master
+        self.currentTime = None
 
-        # Move there
+    def tick(self, count):
+        self.currentTime = count
 
-        for num in range(0, len(robotToUse.destination)):
-            # Can maybe throw an if into moveByOne that checks to see if there
-            # is a shelf on robot and update location
-            robotToUse.moveByOne()
+    def fire(self, argument):
+        print("Order event happened at:", self.master.getCount())
+        run = argument
+        #self.enqueue("Order event happened at: ")
 
-        print("Now charging")
-        robotToUse.setState(7)
-        print(robotToUse)
+    def enqueue(self, argument):
+        event = Event(self.currentTime + 5, argument, self)
+        self.master.enqueue(event)
 
-    print("\nNext Item\n-----------------------------------------")
+class tRobot:
 
+    def __init__(self, master):
+        self.master = master
+        self.currentTime = None
 
+    def tick(self, count):
+        self.currentTime = count
 
-# After items are grabbed for the order, check to make sure they are correct
-# and ship to the address,  / Move along belt to dock area
-ord1.updateStatus("All Items are collected")
-for num in range(0, len(ord1.orderitems)):
-    if ord1.orderitems[num] != ord1.collected[num].getItemName():
-         print("Something wrong with order")
-    else:
-        print("pog order completed")
-        ord1.updateStatus("Completed")
+    def fire(self, argument):
+        print("Robot event happened at:", self.master.getCount())
+        run = argument
+        #self.enqueue("Robot event happened at: ")
 
+    def enqueue(self, argument):
+        event = Event(self.currentTime + 5, argument, self)
+        self.master.enqueue(event)
 
+class tVisualizer:
 
+    def __init__(self, master):
+        self.master = master
+        self.currentTime = None
 
+    def tick(self, count):
+        self.currentTime = count
 
+    def fire(self, argument):
+        print("Visualizer event happened at:", self.master.getCount())
+        run = argument
+        #self.enqueue("Visualizer event happened at: ")
 
+    def enqueue(self, argument):
+        event = Event(self.currentTime + 3, argument, self)
+        self.master.enqueue(event)
 
 
-# Do we start an Order here and try to fulfill it?
-# Take an order and start going through the steps to fulfill it.
-#def CompleteOrder(order):
- #   # Update Status
- #   order.updateStatus("In Progress")
+# run for allotted amount of time
+def Run(limit):
 
- #   for i in order.orderitems:
- #       currentitem = i
- #       # if in stock
- #       if inv.numberInStockName(currentitem) > 0:
- #           itemlocation = currentitem.getShelf().cellLocation()  # This is messed up ignore
- #           print(itemlocation)
+    master = Master()
 
+    master.tickCount()
+    master.createEvents()
 
-    #inv.numberInStockName()
-    # Find the first item in the orders,
-    # Ask Inventory, how many are in stock, then ask where I can find it
-        # What shelf and location
-    # With this info, Ask Robot Scheduler to send a robot to that location
-    # Have robot pick up shelf
-    # Move to location of Picker,
-    # Add item to bin,
-        # Check where next item would be
-    # Return Shelf,
-    # Repeat last 5 steps until completed
-
-
-
-
-
-
-
-
-
-
-
-
-# Test Shelves
-# These are now autogenerated within sArea
-#shelf1 = Shelf(1, 100)
-#shelf2 = Shelf(2, 200)
-
-# Test Items
-#item1 = Item('Bagpipe', 51009)
-#item2 = Item('Tic-Tac', 57678)
-#item3 = Item('Hydras Lament', 11008)
-#item4 = Item('Socks', 13009)
-#item5 = Item('Puck', 34678)
-#item6 = Item('Shifters Shield', 81035)
-#item7 = Item('Tic-Tac', 57678)
-#item8 = Item('Singular Orange', 34231)
-
-# Creating a few initial points that robots can be placed at
-#startPoint1 = Point(1,2)
-#startPoint2 = Point(7,8)
-#startPoint3 = Point(4,4)
-#startPoint4 = Point(6,2)
-
-# Test Robots
-#roboA= Robot('A', startPoint1)
-#roboB = Robot('B', startPoint2)
-#roboC= Robot('C', startPoint3)
-#roboD = Robot('D', startPoint4)
-
-# Test Locations to Path Robots to
-#newLoc = Point(10, 10)
-#newLoc2 = Point(0, 0)
-
-# Add Shelves to Shelve Area
-#sArea.addShelve(shelf1)
-#sArea.addShelve(shelf2)
-
-# Add Items to Inventory
-#inv.addItem(item2)
-#inv.addItem(item1)
-#inv.addItem(item3)
-#inv.addItem(item4)
-#inv.addItem(item5)
-#inv.addItem(item6)
-#inv.addItem(item7)
-#inv.addItem(item8)
-
-# Add Robots to the Scheduler
-#rSched.addRobot(roboA)
-#rSched.addRobot(roboB)
-#rSched.addRobot(roboC)
-#rSched.addRobot(roboD)
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Placing items on to shelves
-#def placeItemOnShelf():
-    #for i in inv.stock:
-        #nShelf = sArea.findShelfWithSpace()
-        #i.changeShelf(nShelf.shelfNumber)
-        #nShelf.push(i)
-
-#placeItemOnShelf()
-
-#print('Stock')
-#print(inv.stock)
-
-#print('Shelves')
-#print(sArea.allShelves)
-
-#print(inv.findItemSerial(81035))
-
-
-#print(inv.findItemName('Puck'))
-
-
-
-
-
-
-
-
-
-# TRYING TO THEORYCRAFT HOW WE WILL GO ABOUT GETTING THE WAREHOUSE TO FUNCTION AS ONE BEING
-"""
-For the time being, build the entire thing around Floor, ShelfArea, Inventory, RobotScheduler, and OrderControl
-- Can get away with not implementing Belt -  Visualizer is a problem for another time
-
-ORDER OF OPERATIONS
-
-Phase 1: Setup
-- Need to generate our Warehouse
-- Create the Floor and fill it          
-        - Floor - Populate()  will also create our empty shelves
-- Create our Inventory and distribute the items across the warehouse (Put them on shelves)
-        - Inventory - Populate 
-- Create our RobotScheduler and create an area for the robots,  
-        - RobotScheduler - Populate ( add these robots into cells)
-                - Maybe make a RobotArea that is just used once to generate
-
-Phase 2: Receiving Orders and Making everything communicate with each other
-- Create OrderControl
-    - Populate() generate a few sample orders 
-    
-- Filling out orders
-    - Do we do this within orderControl?
-    - Or is this just a massive method within Master?
-            - I feel like Master is the way to go. 
-
-
-
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-# Messing around with simpy for a second to do the event based simulation
-
-# Generator function that defines the working of the traffic light
-# "timeout()" function makes next yield statement wait for a
-# given time passed as the argument
-def Traffic_Light(env):
     while True:
-        print("Light turns GRN at " + str(env.now))
 
-        # Light is green for 25 seconds
-        yield env.timeout(25)
+        master.increaseCount()
+        master.tickCount()
+        print("\n| Tick:", master.getCount())
 
-        print("Light turns YEL at " + str(env.now))
+        # Stop Running if we've hit the time limit
+        if master.getCount() > limit:
+            print("Hit the Time Limit")
+            break
 
-        # Light is yellow for 5 seconds
-        yield env.timeout(5)
+        # If nothing is in EventQueue, advance a Tick
+        if master.peek() is None:
+            print("Nothing in Queue")
+            continue
 
-        print("Light turns RED at " + str(env.now))
+        # If the next Event's time matches the current time, execute it)
+        while master.peek()[2].getTime() == master.getCount():
+            print("Next Event:", master.peek())
+            event = master.dequeue()[2]
+            component = event.getWhoCalled()
+            task = event.getArgument()
+            component.fire(task)
 
-        # Light is red for 60 seconds
-        yield env.timeout(60)
-
-    # env is the environment variable
+            if master.peek() == None:
+                break
 
 
-env = simpy.Environment()
 
-# The process defined by the function Traffic_Light(env)
-# is added to the environment
-env.process(Traffic_Light(env))
+Run(10)
 
-# The process is run for the first 180 seconds (180 is not included)
-env.run(until=180)
-"""
+
+# Memeing for a bit
+#m = Master()
+
+#m.tickCount()
+#m.createEvents()
+
+#print("EventQueue after createEvents()")
+#print(m.eventqueue.queue)
+#print(m.peek())
+#print(m.peek()[2])
+
+#print(m.eventqueue.queue)
+#print(m.eventqueue.get())
+
+
+#print(m.peek()[2].getTime() == m.getCount())
