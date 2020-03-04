@@ -7,7 +7,8 @@ class OrderControl:
 
     # Should order status' be listed here or within Orders class?
 
-    def __init__(self):
+    def __init__(self, env):
+        self.clock = env
         self.allOrders = []     # a List of orders, dictionary might be necessary
         self.currentOrder = None
 

@@ -13,6 +13,13 @@ class Belt:
     def resumeBelt(self):
         self.moving = True
 
+    # Returns a Cell
+    def getBeltLocation(self):
+        return self.location
+
+    def getBeltCoord(self):
+        return self.location.cellLocation()
+
     def addObject(self, object):
         if self.content is None:
             self.content = object
@@ -22,6 +29,8 @@ class Belt:
     def removeObject(self, object):
         self.content = None
 
+    def getContent(self):
+        return self.content
 
     def __str__(self):
-        return'Belt No: {} - Contents: {} Location: {}'.format(self.id, self.content, self.location)
+        return'Belt No: {} - Contents: {}'.format(self.id, self.content)

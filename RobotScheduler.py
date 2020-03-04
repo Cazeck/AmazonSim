@@ -1,9 +1,11 @@
 from Point import Point
 from Robot import Robot
+from Cell import Cell
 
 class RobotScheduler:
 
-    def __init__(self):
+    def __init__(self, env):
+        self.clock = env
         self.robotList = []
         self.availableRobots = []
 
@@ -41,15 +43,22 @@ class RobotScheduler:
     # sendRobot?  which finds an available robot and then sends it to that location with pathing coordinates
 
     def populate(self):
-        startPoint1 = Point(1, 2)
-        startPoint2 = Point(7, 8)
-        startPoint3 = Point(4, 4)
-        startPoint4 = Point(6, 2)
+        startPoint1 = Cell(Point(1, 2))
+        startPoint2 = Cell(Point(7, 8))
+        startPoint3 = Cell(Point(4, 4))
+        startPoint4 = Cell(Point(6, 2))
 
         robos = [Robot('A', startPoint1), Robot('B', startPoint2), Robot('C', startPoint3),   Robot('D', startPoint4) ]
 
+        startPoint1.setContents(robos[0])
+        startPoint2.setContents(robos[1])
+        startPoint3.setContents(robos[2])
+        startPoint4.setContents(robos[3])
+
         for i in robos:
             self.robotList.append(i)
+
+        self.idleRobots()
 
     # CAN BE REMOVED FROM HERE WHEN IT IS TESTED TO WORK WITHIN FLOOR
 

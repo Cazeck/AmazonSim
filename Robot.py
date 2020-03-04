@@ -40,8 +40,10 @@ class Robot:
 
     def pickUpShelf(self, shelf):
         self.holdingShelf = shelf
+        self.holdingShelf.resting = False
 
     def putDownShelf(self, shelf):
+        self.holdingShelf.resting = True
         self.holdingShelf = None
 
     # Return the shelf that it is currently holding
@@ -60,6 +62,13 @@ class Robot:
     # Method will be used by RobotScheduler every tick
     # to move the robot by one point
     def moveByOne(self):
+        # if holding a shelf
+        #if self.destination != [] and self.getholdingShelf() is not None:
+        #    # If holding a shelf, we need to also change the cells for the shelf as we move each tick
+        #    self.location = self.destination[0]
+        #    self.getholdingShelf().resting = False
+
+        # if moving by itself
         if self.destination != []:
             #print("| Moving from: " + str(self.location) + " To: " + str(self.destination[0]))
             self.location = self.destination[0]     # Get next point in the list

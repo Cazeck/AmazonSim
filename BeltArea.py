@@ -16,10 +16,11 @@ class BeltArea:
     def __init__(self, startpoint, length):
         self.areacontents = []      # List of Cells
         self.belts = []             # List of belts
-        self.startpoint = Point(startpoint.x, startpoint.y)
+        self.startpoint = startpoint
         self.length = length
+        self.endpoint = Point(startpoint.x, startpoint.y + length)
 
-        # Building BeltArea Cell
+        # Building BeltArea Cells
         # Going North / South
         for i in range(startpoint.y, startpoint.y + length):
             cellToAdd = Cell(Point(startpoint.x, i))
@@ -35,11 +36,27 @@ class BeltArea:
             i.setContents(Belt(self.belt_sections, i))      # Every Cell receives a Belt
             self.belts.append(i.getContents())              # Add that Belt to the List of Belts
 
+    def getCell(self, point):
+        for i in self.areacontents:
+            if i.x == point.x and i.y == point.y:
+                return i
+
+    # Returns the belt located at the Point Location
+    def getBeltAt(self, point):
+        if self.isWithin(point):
+            for b in self.belts:
+                bcoord = b.getBeltCoord()
+                if bcoord.x == point.x and bcoord.y == point.y:
+                    #print(f'Belt {b} is located at {point}')
+                    return b
+        else:
+            print(f"No Belt located at point {point}")
 
     # Sorting list so that the first belt location always appear first
     # Sorts by Cell's y Location
     def sortBelt(self):
         self.belts.sort(key=lambda belt: belt.location.y)
+
 
     # Moves every Belt in the Belt Area forward one Cell
     # The last belt is moved to the first position for now
@@ -80,7 +97,30 @@ class BeltArea:
 
         self.sortBelt()
 
+    # Returns a boolean if Point is within BeltArea
+    def isWithin(self, point):
+        # if not in same x row as belt
+        if point.x is not self.startpoint.x:
+            return False
 
+        if point.y > self.endpoint.y:
+            return False
+
+        if point.y < self.startpoint.y:
+            return False
+
+        else:
+            return True
+
+
+#beltA = BeltArea(Point(0, 5), 5)
+#print(beltA.areacontents)
+
+#print('\n', beltA.belts)
+
+#print(beltA.getCell(Point(0,9)))
+
+"""
 beltA = BeltArea(Point(0,0), 5)     # 5 Sections from 0,0 to 0,4
 for i in beltA.belts:
     print(i)
@@ -113,3 +153,4 @@ print('\nGoing to move the belt')
 beltA.moveBelt()
 for i in beltA.belts:
     print(i)
+"""

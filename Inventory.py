@@ -4,15 +4,18 @@ from Item import Item
 
 class Inventory:
     # Create a list with all stocked items in it
-    def __init__(self):
+    def __init__(self, env):
+        self.clock = env
         self.stock = []
-
         self.populate()
+
     # Adds an item to the stock
     # item = the item to add
-    ## Do I assign a shelf here?
     def addItem(self, item):
         self.stock.append(item)
+
+    def removeItem(self, item):
+        self.stock.remove(item)
 
     # Finds out how many of an item is in stock
     # itemName is the item you want

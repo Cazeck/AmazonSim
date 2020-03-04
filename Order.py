@@ -25,7 +25,7 @@ class Order:
 
         if len(self.orderitems) == len(self.collected):   # if same size, we already checked if the item is okay in add
             self.setFilled()
-            print("Order Complete")
+            print("We have all items for the order!")
             return self.fulfilled
 
             #for i in self.orderitems:
@@ -46,6 +46,9 @@ class Order:
 
     def getItems(self):
         return self.orderitems
+
+    def getShipAddr(self):
+        return self.shipaddr
 
     def collectedItems(self):
         return self.collected
@@ -77,7 +80,7 @@ class Order:
     # Item: Hydras Lament - Serial No: 11008 - Shelf: None
 
     def __str__(self):
-        return '|Address: {} - Status: {}  \n| Order:     {} \n| Collected: {}'.format(self.orderid, self.shipaddr, self.status, self.orderitems, self.collected)
+        return 'Order Id: {} - Ship Address: {} - Status: {} \n| Order: {} \n| Collected: {}'.format(self.orderid, self.shipaddr, self.status, self.orderitems, self.collected)
 
 
 #item1 = Item('Bagpipe', 51009)

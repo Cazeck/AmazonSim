@@ -6,6 +6,7 @@
 from Point import Point
 from Shelf import Shelf
 from Robot import Robot
+from Belt import Belt
 
 class Cell(Point):
 
@@ -37,12 +38,20 @@ class Cell(Point):
 
         result = "Cell x:{} y:{}".format(self.x, self.y)
 
+        if isinstance(self.content, Shelf) and isinstance(self.content, Robot):
+            result += " contains Robot and Shelf"
+            return result
+
         if isinstance(self.content, Shelf):
             result += " contains Shelf"
             return result
 
         if isinstance(self.content, Robot):
             result += " contains Robot"
+            return result
+
+        if isinstance(self.content, Belt):
+            result += " contains Belt"
             return result
 
         result += " contains Nothing"

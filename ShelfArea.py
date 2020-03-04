@@ -12,7 +12,9 @@ class ShelfArea:
 
     # Original init for testing
     #def __init__(self):
-    #    self.allShelves = []  # from Original testing section
+    #    self.allShelves = []  # from O riginal testing section
+    numofsareas = 0
+    numofshelves = 0
 
     # New values to work on for actually having a floor implemented
     def __init__(self, corner, width):
@@ -20,6 +22,9 @@ class ShelfArea:
         self.randomsource = 1 # SimRandom Object for deterministic randomness
         self.corner = Point(corner.x, corner.y) # Lower left corner of shelf area
         self.width = width
+        self.areanumber = ShelfArea.numofsareas + 1
+        ShelfArea.numofsareas += 1
+
 
         # Trying to build the shelve area cells
         for i in range(corner.y, corner.y + 2):
@@ -52,13 +57,14 @@ class ShelfArea:
         return None # No Point found
 
     # Fills the ShelfArea with shelf objects in each cell
-    # Will be called by the constructor
+    # Called by the constructor
     def populate(self):
-        number = 0
+        #number = 0
         for i in self.areacontents:
-            number += 1
+            ShelfArea.numofshelves += 1 # So we can have unique shelfNos across multiple areas
+            #print("adding shelf no" + str(self.numofshelves))
             # Every Cell gets a Shelf added to it
-            i.setContents(Shelf(number, i))
+            i.setContents(Shelf(self.numofshelves, i))
 
     # Returns a boolean if point is within ShelfArea
     def hasWithin(self, point):
@@ -107,32 +113,6 @@ class ShelfArea:
                 #print(i.getContents())
                 return i.getContents()
 
-    # Original ShelfArea for testing
-    #def addShelve(self, shelf):
-    #    self.allShelves.append(shelf)
-
-    # Original ShelfArea for testing
-    #def numberOfShelves(self):
-    #    return len(self.allShelves)
-
-    # Original ShelfArea for testing
-    # Finds a shelf with its number
-    #def findShelf(self, shelfNo):
-    #    for i in self.allShelves:
-    #        if shelfNo == i.shelfNumber:
-    #            return i
-    #    return None  # item not found with matching serial
-
-    # Original ShelfArea for testing
-    #def findShelfWithSpace(self):
-    #    for i in self.allShelves:
-    #        if len(i.shelfStock) < i.maxItems:
-    #            #print('This shelf is not full, returning')
-    #            return i
-
-    #        else:
-    #            #print('This shelf is full, checking another')
-    #            continue
 
 
 

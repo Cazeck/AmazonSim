@@ -12,7 +12,7 @@ class Shelf:
         self.shelfNumber = number
         self.shelfStock = []
         self.homeLocation = home
-        self.currentLocation = home   # Could potentially be better off  as a Boolean value "Resting"
+        self.resting = True   # Whether or not the shelf is moving
 
         Shelf.numofshelves += 1
 
@@ -36,6 +36,8 @@ class Shelf:
             if name == item.itemName:
                 return item
 
+    def getHomeLocation(self):
+        return self.homeLocation
 
     def getShelfNo(self):
         return self.shelfNumber
@@ -47,12 +49,12 @@ class Shelf:
     # Umambiguous reperestation of object, used for debugging / loggin - seen for developers
     # Item('Bong', 67090, 4)
     def __repr__(self):
-        return "Shelf('{}', '{}', {}, {})".format(self.shelfNumber, self.homeLocation, self.currentLocation, self.shelfStock)
+        return "Shelf('{}', '{}', {}, {})".format(self.shelfNumber, self.homeLocation, self.resting, self.shelfStock)
 
     # readable representation of an object, used for display to end users
     # Item: Hydras Lament - Serial No: 11008 - Shelf: None
     def __str__(self):
-        return '| Shelf: {} -  HomeLoc: {} - Current Loc: {} \n| Stock: {}'.format(self.shelfNumber, self.homeLocation, self.currentLocation, self.shelfStock)
+        return '| Shelf: {} -  HomeLoc: {} - Resting: {} \n| Stock: {}'.format(self.shelfNumber, self.homeLocation, self.resting, self.shelfStock)
 
 
 

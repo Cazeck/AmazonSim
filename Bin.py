@@ -7,26 +7,15 @@ class Bin:
     def __init__(self):
 
         self.contents = []
-        self.order = None       # Order that it is a part of
-        self.finished = False   # Whether or not the bin has all of the items needed
-        self.binId = self.numofbins  # Give an id when it is made
-        self.numofbins += 1     # Move the id up for the next bin
-
-    def isFinished(self):
-        return self.finished
-
-    def setFinished(self):
-        self.finished = True
-
-    def setOrder(self, ord):
-        self.order = ord
-
-    # Return which order this bin is a part of
-    def getOrder(self):
-        return self.order
+        self.location = None
+        self.binId = self.numofbins     # Give an id when it is made
+        self.numofbins += 1             # Move the id up for the next bin
 
     def getContents(self):
         return self.contents
+
+    def changeLocation(self, location):
+        self.location = location
 
     def addToBin(self, item):
         if len(self.contents) < self.binsize:
@@ -36,5 +25,10 @@ class Bin:
             print("There is not enough room in this bin")
 
     def removeFromBin(self, item):
-        self.contents.remove(item)
+        if len(self.getContents()) > 0:
+            self.contents.remove(item)
+        else:
+            print("The bin is empty")
+
+
 
