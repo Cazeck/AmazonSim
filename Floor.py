@@ -3,6 +3,9 @@ from Cell import Cell
 from ShelfArea import ShelfArea
 from BeltArea import BeltArea
 from SimRandom import SimRandom
+from Robot import Robot
+from Shelf import Shelf
+from Belt import Belt
 
 # Creating a mock floor for testing purposes
 class Floor:
@@ -189,8 +192,55 @@ class Floor:
         s = self.randogen.randint(len(self.shelfareas))
         return self.shelfareas[s].randomPoint()
 
+    # Going to attempt to display areacontents in full
+    def printMap(self):
+        linePrint = {}
+        rowContents = []
+        # In reverse to go bottom --> top
+        #for i in range(0, self.warehousewidth):
+        for i in range(self.warehousewidth - 1, 0, -1):
+            yCoord = i
+            for j in range(0, self.warehousedepth):
+                xCoord = j
+                #meme.append(f'Point {xCoord}, {yCoord}')
+                cellAtCoord = self.allpoints[f'Point x:{xCoord} y:{yCoord}']
+                objAtCoord = cellAtCoord.getContents()
+
+                    # Not sure how this one will work yet
+                if isinstance(objAtCoord, Shelf) and isinstance(objAtCoord, Robot):
+                    rowContents.append(f'R(RobotName) S(shelfnumber)')
+                    pass
+
+                if isinstance(objAtCoord, Shelf):
+                    rowContents.append(f"Shelf {objAtCoord.shelfNumber}")
+                    pass
+
+                if isinstance(objAtCoord, Robot):
+                    rowContents.append(f"Robot {objAtCoord.robotName}")
+                    pass
+
+                if isinstance(objAtCoord, Belt):
+                    rowContents.append(f"Belt {objAtCoord.id}")
+                    pass
+
+                # If none of above, it should be None
+                if objAtCoord is None:
+                    rowContents.append('Nothing')
+
+            linePrint[f'Row {i}'] = rowContents
+            # Reset for next row
+            rowContents = []
+
+        for row in linePrint:
+            #print('\n', row, linePrint[row])
+            print(row, linePrint[row])
+
+
+
 #env = "meme"
 #floor = Floor(env)
+#print(floor.allpoints)
+#floor.printMap()
 #print(floor.beltAreas[0].areacontents)
 #for i in floor.allpoints:
     #print(i)
