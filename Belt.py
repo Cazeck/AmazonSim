@@ -1,13 +1,11 @@
 
 class Belt:
 
-    def __init__(self, id, capacity, width):
+    def __init__(self, id, location):
         self.id = id
-        self.capacity = capacity
-        self.width = width
-        self.currentBins = []
-        self.moving = False         # Whether or not the belt is moving down the line
-
+        self.location = location
+        self.content = None
+        self.moving = False
 
     def pauseBelt(self):
         self.moving = False
@@ -15,16 +13,15 @@ class Belt:
     def resumeBelt(self):
         self.moving = True
 
-    def getCurrentBins(self):
-        return self.currentBins
+    def addObject(self, object):
+        if self.content is None:
+            self.content = object
+        else:
+            print(f'Already an object on Belt {self.id}')
 
-    def addBin(self, bin):
-        self.currentBins.append(bin)
+    def removeObject(self, object):
+        self.content = None
 
-    def removeBin(self, bin):
-        self.currentBins.remove(bin)
 
-    # Will need some way to implement tick so that we will be able to move
-    # objects up the belt every tick
-    def tick(self):
-        return 'meme'
+    def __str__(self):
+        return'Belt No: {} - Contents: {} Location: {}'.format(self.id, self.content, self.location)
