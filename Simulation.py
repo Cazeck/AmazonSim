@@ -37,6 +37,8 @@ def shelveStock():
         randomsArea = random.choice(floor.shelfareas)
 
         # Choose a random shelf within above Shelf Area
+        #randonCellContent= random.choice(randomsArea.areacontents).getContents()
+        #randomShelf = randonCellContent[0]
         randomShelf = random.choice(randomsArea.areacontents).getContents()
         randomShelf.addItem(item)  # Put Item on Shelf
         item.changeShelf(randomShelf.getShelfNo())  # Tell Item which Shelf it belongs to
@@ -64,7 +66,6 @@ def processOrder(order):
     # The bin that the items will be put on
     order_bin = Bin()
     beltArea = floor.beltAreas[0]
-
 
     # Go through each item one-by-one
     # item is just a string of an item name. Not an Item object
@@ -97,13 +98,14 @@ def processOrder(order):
 
             print("\nStarting robotRequest --> Picker")
             robot.status = 2  # pickerbound
-            robotRequest(robot, floor.getPicker())
+            robotRequest(robot, floor.getPickerLocation())
             robot.status = 3  # atpicker
 
             pickeditem = robot.getholdingShelf().findItem(item)
 
             print("Picker takes items off of shelf")
-            picker.pickItem(shelf, pickeditem, order, order_bin)
+            picker = floor.getPicker()
+            picker.pickItem(shelf, pickeditem, order, order_bin, inventory)
 
             print(f"\nIn Bin: {order_bin.getContents()}")
 
@@ -125,7 +127,11 @@ def processOrder(order):
 
             robot.setState(6)  # chargerbound
             print("\nStarting robotRequest --> Charger")
-            robotRequest(robot, floor.getCharger())
+
+            # NEED TO CREATE A GET OPEN CHARGER FUNCTION HERE<
+            # FOR NOW JSUT INPUT ORIGINAL LOCATION
+            #robotRequest(robot, floor.getCharger())     #Get open charger?
+            robotRequest(robot, floor.chargers[0].location)
             robot.setState(7)  # charging
 
     print("\n-------------- OUTSIDE ITEM LOOP -------------------")
@@ -146,6 +152,8 @@ def processOrder(order):
         #print(pBelt.getContent().getContents())
 
         # Now we need to calculate how far picker is from packer
+        packer = floor.getPacker()
+
         dist = packer.location.y - picker.location.y
         print(f'\nPacker is {dist} Units away from Picker')
 
@@ -153,8 +161,8 @@ def processOrder(order):
         print("Moving Belt")
         for i in range(0, dist):
             beltArea.moveBelt()
-            print('Moved one space on belt')
-            print(f'firstBelt now at: {firstBelt.getBeltCoord()}')
+            #print('Moved one space on belt')
+            #print(f'firstBelt now at: {firstBelt.getBeltCoord()}')
 
         # Now we need to take the Bin off of the Belt
         # same as firstBelt. Just making sure
@@ -181,8 +189,8 @@ def processOrder(order):
         print("Moving Belt")
         for i in range(0, dist2):
             beltArea.moveBelt()
-            print('Moved one space on belt')
-            print(f'firstBelt now at: {firstBelt.getBeltCoord()}')
+            #print('Moved one space on belt')
+            #print(f'firstBelt now at: {firstBelt.getBeltCoord()}')
 
 
         # Pretend shippingDock removes the package from Belt, and ships it
@@ -194,32 +202,14 @@ def processOrder(order):
 
 
 
-
-        # We have all of the Items for the order now
-
-        # We need to put this bin on the belt
-        #picker.putOnBelt(order_bin, pBelt)
-        # move the belt to the packer
-        # have the packer package the items
-        #order_package = packer.createPackage(order_bin)
-
-        # package onto the belt
-        #packer.putOnBelt(order_package, 'belt')
-        # move Belt w/ package to delivery area
-        # Send package to the address
-        # Clear order from Queue
-        #print('pog')
-
-
-
 env = simpy.Environment()
 # Test Instances of Areas
 floor = Floor(env)
 inventory = Inventory(env)
 robotScheduler = RobotScheduler(env)
 orderControl = OrderControl(env)
-picker = Picker(Point(1,5), inventory)
-packer = Packer(Point(1,10))
+#picker = Picker(Point(1,5), inventory)
+#packer = Packer(Point(1,10))
 
 # Place items into shelves within ShelfAreas
 shelveStock()
