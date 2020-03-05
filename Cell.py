@@ -7,16 +7,21 @@ from Point import Point
 from Shelf import Shelf
 from Robot import Robot
 from Belt import Belt
+from Packer import Packer, Package
+from Picker import Picker
+from Charger import Charger
+from DockArea import DockArea
+from Bin import Bin
 
 class Cell(Point):
 
     # What is currently in this cell, could be either a Robot or Shelf
-    content = None
+    #content = None
 
     def __init__(self, point):
         self.x = point.x
         self.y = point.y
-        content = None
+        self.content = []
 
     # Returns location of Cell (Point Object)
     def cellLocation(self):
@@ -28,7 +33,7 @@ class Cell(Point):
 
     # Adds an object to the cell
     def setContents(self, object):
-        self.content = object
+        self.content.append(object)
 
     def __repr__(self):
         return "Cell('{}', '{}', {})".format(self.x, self.y, self.content)
@@ -38,21 +43,54 @@ class Cell(Point):
 
         result = "Cell x:{} y:{}".format(self.x, self.y)
 
-        if isinstance(self.content, Shelf) and isinstance(self.content, Robot):
-            result += " contains Robot and Shelf"
-            return result
+        if len(self.content) == 1:
 
-        if isinstance(self.content, Shelf):
-            result += " contains Shelf"
-            return result
+            if isinstance(self.content[0], Shelf):
+                result += " contains Shelf"
+                return result
 
-        if isinstance(self.content, Robot):
-            result += " contains Robot"
-            return result
+            if isinstance(self.content[0], Robot):
+                result += " contains Robot"
+                return result
 
-        if isinstance(self.content, Belt):
-            result += " contains Belt"
-            return result
+            if isinstance(self.content[0], Belt):
+                result += " contains Belt"
+                return result
+
+            if isinstance(self.content[0], Packer):
+                result += " contains Packer"
+                return result
+
+            if isinstance(self.content[0], Picker):
+                result += " contains Picker"
+                return result
+
+            if isinstance(self.content[0], Charger):
+                result += " contains Charger"
+                return result
+
+            if isinstance(self.content[0], DockArea):
+                result += " contains Dock"
+                return result
+
+        if len(self.content) == 2:
+
+            if (isinstance(self.content[0], Robot) and isinstance(self.content[1], Shelf)) or (isinstance(self.content[1], Robot) and isinstance(self.content[0], Shelf)):
+                result += " contains Robot and Shelf"
+                return result
+
+            if (isinstance(self.content[0], Robot) and isinstance(self.content[1], Charger)) or (isinstance(self.content[1], Robot) and isinstance(self.content[0], Charger)):
+                result += " contains Robot and Charger"
+                return result
+
+            if (isinstance(self.content[0], Belt) and isinstance(self.content[1], Bin)) or (isinstance(self.content[1], Belt) and isinstance(self.content[0], Bin)):
+                result += " contains Robot and Shelf"
+                return result
+
+            if (isinstance(self.content[0], Belt) and isinstance(self.content[1], Package)) or (isinstance(self.content[1], Belt) and isinstance(self.content[0], Package)):
+                result += " contains Robot and Shelf"
+                return result
+
 
         result += " contains Nothing"
         return result

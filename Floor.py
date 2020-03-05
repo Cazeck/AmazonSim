@@ -7,9 +7,10 @@ from Robot import Robot
 from Shelf import Shelf
 from Belt import Belt
 from Picker import Picker
-from Packer import Packer
+from Packer import Packer, Package
 from Charger import Charger
 from DockArea import DockArea
+from Bin import Bin
 
 # Creating a mock floor for testing purposes
 class Floor:
@@ -20,9 +21,11 @@ class Floor:
     picker = Point(1, 5)
     packer = Point(1, 10)
     shippingdock = DockArea([Point(0, 18), Point(1, 18),Point(0, 19), Point(1, 19)])
-    chargers = [Charger(Point(5, 0)), Charger(Point(6, 0)), Charger(Point(7, 0)), Charger(Point(8, 0)), Charger(Point(9, 0))]
     shippingdockcorner = Point(0, 18)
-    #receivingdock = Point(80, 0)
+    chargers = [Charger(Point(5, 0)), Charger(Point(6, 0)), Charger(Point(7, 0)), Charger(Point(8, 0)), Charger(Point(9, 0))]
+    robots = [Robot('A', Point(5, 0)), Robot('B', Point(6, 0)), Robot('C', Point(7, 0)), Robot('D', Point(8, 0)), Robot('E', Point(9, 0))]
+
+
 
     def __init__(self, env):
         self.clock = env
@@ -61,16 +64,24 @@ class Floor:
                 # Create the Chargers
                 for charger in self.chargers:
                     if charger.location.x == point.x and charger.location.y == point.y:
-                        print("Charger")
+                        #print("Charger")
                         cell.setContents(charger)
+                        #print(cell)
+
+                for robot in self.robots:
+                    if robot.location.x == point.x and robot.location.y == point.y:
+                        #print("Charger")
+                        cell.setContents(robot)
+                        robot.setCell(cell)
                         print(cell)
+                        print(cell.getContents())
 
                 # Create the Dock Area
                 for p in self.shippingdock.points:
                     if p.x == point.x and p.y == point.y:
-                        print("Dock Section")
+                        #print("Dock Section")
                         cell.setContents(self.shippingdock)
-                        print(cell)
+                        #print(cell)
 
                 # Creating BeltArea
                 for b in self.beltAreas:
@@ -84,14 +95,6 @@ class Floor:
 
                 self.allpoints.update({str(point) : cell})  # Adds to the dictionary as {Point: Cell}
 
-        #self.allpoints.update({str(point): cell})  # Adds to the dictionary as {Point: Cell}
-        # Add Picker / Packer / Dock / Charger to Floor
-
-        # <String, Cell>  Point x:0 y:0
-        #cell = self.allpoints['Point x:0 y:0']
-        #cell.setContents('Poop Object')
-        #print(cell)
-        #print(self.allpoints['Point x:0 y:0'])
 
 
     # generates a few shelf areas on the floor
@@ -244,43 +247,55 @@ class Floor:
                 xCoord = j
                 #meme.append(f'Point {xCoord}, {yCoord}')
                 cellAtCoord = self.allpoints[f'Point x:{xCoord} y:{yCoord}']
-                objAtCoord = cellAtCoord.getContents()
+                objList = cellAtCoord.getContents()
+                #objAtCoord = objList[0]
+
+                #print(f'At x{xCoord}, y{yCoord} is obj:{objList}')
+
+                # If Contents is empty, move to the next Cell
+                if len(objList) == 0:
+                    rowContents.append('[      ]')
+                    continue
+
+
+                if len(objList) == 1:
+                    objAtCoord = objList[0]
+
+                    if isinstance(objAtCoord, Shelf):
+                        rowContents.append(f"Shelf {objAtCoord.shelfNumber}")
+
+                    if isinstance(objAtCoord, Robot):
+                        rowContents.append(f"Robot {objAtCoord.robotName}")
+
+                    if isinstance(objAtCoord, Belt):
+                        rowContents.append(f"Belt {objAtCoord.id}")
+
+                    if isinstance(objAtCoord, Picker):
+                        rowContents.append(f"Picker")
+
+                    if isinstance(objAtCoord, Packer):
+                        rowContents.append(f"Packer")
+
+                    if isinstance(objAtCoord, Charger):
+                        rowContents.append(f"Charger")
+
+                    if isinstance(objAtCoord, DockArea):
+                        rowContents.append(f'Dock')
+
+                if len(objList) == 2:
 
                     # Not sure how this one will work yet
-                if isinstance(objAtCoord, Shelf) and isinstance(objAtCoord, Robot):
-                    rowContents.append(f'R(RobotName) S(shelfnumber)')
-                    pass
+                    if isinstance(objList[0], Charger) and isinstance(objList[1], Robot):
+                        rowContents.append(f'Char/Rob{objList[1].robotName}')
 
-                if isinstance(objAtCoord, Shelf):
-                    rowContents.append(f"Shelf {objAtCoord.shelfNumber}")
-                    pass
+                    if isinstance(objList[0], Shelf) and isinstance(objList[1], Robot):
+                        rowContents.append(f'Sh{objList[0].shelfNumber}/Rob{objList[1].robotName}')
 
-                if isinstance(objAtCoord, Robot):
-                    rowContents.append(f"Robot {objAtCoord.robotName}")
-                    pass
+                    if isinstance(objList[0], Belt) and isinstance(objList[1], Bin):
+                        rowContents.append(f'Bel{objList[0].id}/Bin{objList[1].binId}')
 
-                if isinstance(objAtCoord, Belt):
-                    rowContents.append(f"Belt {objAtCoord.id}")
-                    pass
-
-                if isinstance(objAtCoord, Picker):
-                    rowContents.append(f"Picker")
-                    pass
-
-                if isinstance(objAtCoord, Packer):
-                    rowContents.append(f"Packer")
-                    pass
-
-                if isinstance(objAtCoord, Charger):
-                    rowContents.append(f"Charger")
-                    pass
-
-                if isinstance(objAtCoord, DockArea):
-                    rowContents.append(f'Dock')
-
-                # If none of above, it should be None
-                if objAtCoord is None:
-                    rowContents.append('[      ]')
+                    if isinstance(objList[0], Belt) and isinstance(objList[1], Package):
+                        rowContents.append(f'Bel{objList[0].id}/Package')
 
             linePrint[f'Row {i}'] = rowContents
             # Reset for next row
