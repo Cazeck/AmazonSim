@@ -1,12 +1,14 @@
 from Point import Point
 from Robot import Robot
 from Cell import Cell
+from Floor import Floor
 
 class RobotScheduler:
 
-    def __init__(self, env):
+    def __init__(self, env, floor):
         self.clock = env
-        self.robotList = []
+        self.floor = floor
+        self.robotList = [Robot('A', Point(5, 0)), Robot('B', Point(6, 0)), Robot('C', Point(7, 0)), Robot('D', Point(8, 0)), Robot('E', Point(9, 0))]
         self.availableRobots = []
 
         self.populate()
@@ -42,22 +44,20 @@ class RobotScheduler:
 
     # sendRobot?  which finds an available robot and then sends it to that location with pathing coordinates
 
+    # Will take the robots from robotList and distribute them into Cells on Floor
     def populate(self):
-        startPoint1 = Cell(Point(1, 2))
-        startPoint2 = Cell(Point(7, 8))
-        startPoint3 = Cell(Point(4, 4))
-        startPoint4 = Cell(Point(6, 2))
 
-        robos = [Robot('A', startPoint1), Robot('B', startPoint2), Robot('C', startPoint3),   Robot('D', startPoint4) ]
+        # For each location on floor
+        for y in range(0, self.floor.warehousedepth):
+            for x in range(0, self.floor.warehousewidth):
+                point = Point(x, y)
+                for robot in self.robotList:
+                    if robot.location.x == point.x and robot.location.y == point.y:
+                        cellAtLocation = self.floor.getCell(point)
+                        cellAtLocation.setContents(robot)
+                        robot.setCell(cellAtLocation)
 
-        startPoint1.setContents(robos[0])
-        startPoint2.setContents(robos[1])
-        startPoint3.setContents(robos[2])
-        startPoint4.setContents(robos[3])
-
-        for i in robos:
-            self.robotList.append(i)
-
+        # Check if new robots are idle. If so, add then to idleList
         self.idleRobots()
 
     # CAN BE REMOVED FROM HERE WHEN IT IS TESTED TO WORK WITHIN FLOOR
@@ -126,67 +126,95 @@ class RobotScheduler:
         return fullPath
 
 
+    # Asks Floor to calculate path from robot -> destination
+    # Calls moveByOne until it is at target location
+    def robotToDestination(self, robot, destination):
+        robotlocation = robot.getLocation()
+
+        # Get Path by Calling Floor's GetPath
+        path = self.floor.getPath(robotlocation, destination)
+        pathlength = len(path)
+
+        robot.setDestination(path)
+
+        # Moving the Robot to location
+        # Running moveByOne multiple times  to emulate ticks for time being
+        for num in range(0, pathlength):
+            self.moveByOne(robot)
 
 
-#startPoint1 = Point(1,2)
-#startPoint2 = Point(7,8)
-#startPoint3 = Point(4,4)
-#startPoint4 = Point(6,2)
+    # New Version of Robot's
+    def moveByOne(self, robot):
 
-#roboA= Robot('A', startPoint1)
-#roboB = Robot('B', startPoint2)
-#roboC= Robot('C', startPoint3)
-#roboD = Robot('D', startPoint4)
+        # If robot is holding a Shelf
+        if robot.holdingShelf is not None and robot.getDestination() != []:
 
-#newLoc = Point(10, 10)
-#newLoc2 = Point(0, 0)
+            currentcell = robot.getCell()
+            nextcell = self.floor.getCell(robot.getDestination()[0])
+            shelfheld = robot.getholdingShelf()
 
-#rSched = RobotScheduler()
+            #print(f'Current Cell is: {currentcell}')
+            #print(f'Next Cell is: {nextcell}')
 
-#rSched.addRobot(roboA)
-#rSched.addRobot(roboB)
-#rSched.addRobot(roboC)
-#rSched.addRobot(roboD)
+            # Adding Robot to next Cell
+            nextcell.setContents(robot)
+            robot.setCell(nextcell)
 
-#print(rSched.robotList)
+            # Adding Shelf to next Cell
+            nextcell.setContents(shelfheld)
 
-#print(rSched.findRobot("B"))
+            # Removing Robot from current Cell
+            currentcell.removeContent(robot)
+            currentcell.removeContent(shelfheld)
 
-#print(rSched.numberOfRobots())
+            # Remove first Point from destination
+            del robot.destination[0]
 
-#roboB.setState(3)
-#roboC.setState(5)
+        # If robot is moving by itself
+        else:
 
-#print(rSched.findAvailableRobots())
+            currentcell = robot.getCell()
+            nextcell = self.floor.getCell(robot.getDestination()[0])
+            #print(f'Current Cell is: {currentcell}')
+            #print(f'Next Cell is: {nextcell}')
+
+            # Adding Robot to next Cell
+            nextcell.setContents(robot)
+            robot.setCell(nextcell)
+
+            # Removing Robot from current Cell
+            currentcell.removeContent(robot)
+
+            # Remove first Point from destination
+            del robot.destination[0]
 
 
-#rSched.mapDestination(roboB, newLoc)
-#rSched.mapDestination(roboB, newLoc)
+#env = 'meme'
+#floor = Floor(env)
 
-#roboB.setDestination(rSched.mapDestination(roboB, newLoc))
+#rsched = RobotScheduler(env, floor)
 
-#newDest = rSched.mapDestination(roboB, newLoc)
-#print(newDest)
+#floor.printMap()
 
-#roboB.setDestination(newDest)
-#roboB.goToDest()
+#robot1 = rsched.robotList[0]
+#print('\n', robot1)
 
-#print(roboB.destination)
-#print(newDest)
+#shelf1 = floor.getCell(Point(10,10)).getContents()[0]
+#print(shelf1)
+#robot1.setDestination([Point(5, 1), Point(5, 2), Point(5, 3)])
 
-#roboB.goToDest()
-#roboB.goToDest()
-#roboB.goToDest()
-#roboB.goToDest()
-#roboB.goToDest()
-#roboB.goToDest()
+#rsched.robotToDestination(robot1, Point(10,10))
 
-#print(newDest)
-#print(roboB.destination)
-#print(roboA.destination)
-#roboA.moveByOne()
+#floor.printMap()
 
-#print(roboA.destination)
-#print(roboA.setDestination(newDest))
+#robot1.pickUpShelf(shelf1)
 
-#roboA.goTo(newDest)
+#print(robot1)
+
+#rsched.robotToDestination(robot1, Point(2,5))
+
+
+#floor.printMap()
+
+#print(floor.getCell(Point(2,5)).content)
+
