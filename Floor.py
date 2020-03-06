@@ -18,8 +18,8 @@ class Floor:
     warehousewidth = 20
     warehousedepth = 20
 
-    picker = Point(1, 5)
-    packer = Point(1, 10)
+    pickerlocation = Point(1, 5)
+    packerlocation = Point(1, 10)
     shippingdock = DockArea([Point(0, 18), Point(1, 18),Point(0, 19), Point(1, 19)])
     shippingdockcorner = Point(0, 18)
     chargers = [Charger(Point(5, 0)), Charger(Point(6, 0)), Charger(Point(7, 0)), Charger(Point(8, 0)), Charger(Point(9, 0))]
@@ -33,13 +33,15 @@ class Floor:
         self.allpoints = {}     #  A Map of <String, Cell> for all points on the floor each cell is one "square" on floor
         self.shelfareas = []    # will be a list of shelfareas, There can be multiple shelving sections
         self.beltAreas = []
+        self.picker = Picker(self.pickerlocation)
+        self.packer = Packer(self.packerlocation)
         self.populateShelfArea()
         self.populateBeltArea()
 
         # Create a Cell for each location in Floor
-        for i in range(0, self.warehousewidth):
-            for j in range(0, self.warehousedepth):
-                point = Point(j, i)  # is the (x,y)  # Ended up switched, but it works like this for now
+        for y in range(0, self.warehousedepth):
+            for x in range(0, self.warehousewidth):
+                point = Point(x, y)  # is the (x,y)  # Ended up switched, but it works like this for now
                 # check if this point already has a cell in a shelf area
                 # and if so, just use the existing cell
                 cell = Cell(point)    # will be the new cell created for this point
@@ -52,13 +54,14 @@ class Floor:
                         assert cell is not None
 
                 # Create the Cell for Picker
-                if self.picker.x == point.x and self.picker.y == point.y:
-                    cell.setContents(Picker(point))
+                if self.pickerlocation.x == point.x and self.pickerlocation.y == point.y:
+                    cell.setContents(self.picker)
                     #print(f'Picker cell is {cell}')
 
                 # Create the Cell for Packer
-                if self.packer.x == point.x and self.packer.y == point.y:
-                    cell.setContents(Packer(point))
+                if self.packerlocation.x == point.x and self.packerlocation.y == point.y:
+                    cell.setContents(self.packer)
+
                     #print(f'Packer cell is {cell}')
 
                 # Create the Chargers
@@ -68,13 +71,13 @@ class Floor:
                         cell.setContents(charger)
                         #print(cell)
 
-                for robot in self.robots:
-                    if robot.location.x == point.x and robot.location.y == point.y:
-                        #print("Charger")
-                        cell.setContents(robot)
-                        robot.setCell(cell)
-                        print(cell)
-                        print(cell.getContents())
+                #for robot in self.robots:
+                #    if robot.location.x == point.x and robot.location.y == point.y:
+                #        #print("Charger")
+                #        cell.setContents(robot)
+                #        robot.setCell(cell)
+                #        #print(cell)
+                #        #print(cell.getContents())
 
                 # Create the Dock Area
                 for p in self.shippingdock.points:
@@ -105,10 +108,10 @@ class Floor:
 
     # generates the belt are on the floor
     def populateBeltArea(self):
-        distance = self.shippingdockcorner.y - self.picker.y
+        distance = self.shippingdockcorner.y - self.pickerlocation.y
         # Make the beltArea one left of Picker, and all the way to Shipping Dock
         #print(f'BeltArea start points are {self.picker.x - 1} and {self.picker.y} distance {distance}')
-        self.beltAreas.append(BeltArea(Point(self.picker.x - 1, self.picker.y), distance))
+        self.beltAreas.append(BeltArea(Point(self.pickerlocation.x - 1, self.pickerlocation.y), distance))
 
     # returns the Cell at a desired Point
     def getCell(self, point):
@@ -127,8 +130,14 @@ class Floor:
     def getPicker(self):
         return self.picker
 
+    def getPickerLocation(self):
+        return self.pickerlocation
+
     def getPacker(self):
         return self.packer
+
+    def getPackerLocation(self):
+        return self.packerlocation
 
     def getShippingDock(self):
         return self.shippingdockcorner
@@ -141,7 +150,7 @@ class Floor:
 
     def getBeltArea(self):
         beltarea = []
-        for i in range(self.picker.x, 0):
+        for i in range(self.pickerlocation.x, 0):
             beltarea.add(Point(i,0))
         return beltarea
 
@@ -221,7 +230,8 @@ class Floor:
     def locateShelf(self, shelfnumber):
         for sArea in self.shelfareas:
             for cell in sArea.areacontents:
-                shelf = cell.getContents()
+                cellcont = cell.getContents()
+                shelf = cellcont[0]
                 if shelfnumber == shelf.shelfNumber:
                     return sArea
 
@@ -248,7 +258,6 @@ class Floor:
                 #meme.append(f'Point {xCoord}, {yCoord}')
                 cellAtCoord = self.allpoints[f'Point x:{xCoord} y:{yCoord}']
                 objList = cellAtCoord.getContents()
-                #objAtCoord = objList[0]
 
                 #print(f'At x{xCoord}, y{yCoord} is obj:{objList}')
 
@@ -282,20 +291,40 @@ class Floor:
                     if isinstance(objAtCoord, DockArea):
                         rowContents.append(f'Dock')
 
+                # If contents are:
                 if len(objList) == 2:
 
-                    # Not sure how this one will work yet
+                    # [Charger, Robot]
                     if isinstance(objList[0], Charger) and isinstance(objList[1], Robot):
                         rowContents.append(f'Char/Rob{objList[1].robotName}')
 
+                    # [Robot, Charger]
+                    if isinstance(objList[0], Robot) and isinstance(objList[1], Charger):
+                        rowContents.append(f'Char/Rob{objList[0].robotName}')
+
+                    # [Shelf, Robot]
                     if isinstance(objList[0], Shelf) and isinstance(objList[1], Robot):
                         rowContents.append(f'Sh{objList[0].shelfNumber}/Rob{objList[1].robotName}')
 
+                    # [Robot, Shelf]
+                    if isinstance(objList[0], Robot) and isinstance(objList[1], Shelf):
+                        rowContents.append(f'Sh{objList[1].shelfNumber}/Rob{objList[0].robotName}')
+
+                    # [Belt, Bin]
                     if isinstance(objList[0], Belt) and isinstance(objList[1], Bin):
                         rowContents.append(f'Bel{objList[0].id}/Bin{objList[1].binId}')
 
+                    # [Bin, Belt]
+                    if isinstance(objList[0], Bin) and isinstance(objList[1], Belt):
+                        rowContents.append(f'Bel{objList[1].id}/Bin{objList[0].binId}')
+
+                    # [Belt, Package]
                     if isinstance(objList[0], Belt) and isinstance(objList[1], Package):
                         rowContents.append(f'Bel{objList[0].id}/Package')
+
+                    # [Package, Belt]
+                    if isinstance(objList[0], Package) and isinstance(objList[1], Belt):
+                        rowContents.append(f'Bel{objList[1].id}/Package')
 
             linePrint[f'Row {i}'] = rowContents
             # Reset for next row
@@ -307,6 +336,15 @@ class Floor:
 
 
 
-env = "meme"
-floor = Floor(env)
-floor.printMap()
+#env = "meme"
+#floor = Floor(env)
+#floor.printMap()
+#print('\n')
+
+#robot1 = floor.robots[0]
+#print(robot1)
+#robot1.setDestination([Point(5, 1), Point(5, 2), Point(5, 3)])
+
+
+#robot1.moveByOne()
+#print(robot1)
