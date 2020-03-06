@@ -37,9 +37,9 @@ def shelveStock():
         randomsArea = random.choice(floor.shelfareas)
 
         # Choose a random shelf within above Shelf Area
-        #randonCellContent= random.choice(randomsArea.areacontents).getContents()
-        #randomShelf = randonCellContent[0]
-        randomShelf = random.choice(randomsArea.areacontents).getContents()
+        randonCellContent = random.choice(randomsArea.areacontents).getContents()
+        randomShelf = randonCellContent[0]
+        #randomShelf = random.choice(randomsArea.areacontents).getContents()
         randomShelf.addItem(item)  # Put Item on Shelf
         item.changeShelf(randomShelf.getShelfNo())  # Tell Item which Shelf it belongs to
 
@@ -47,6 +47,7 @@ def shelveStock():
 
 # Maps the path from the robots location to the destination
 # and tells the robot head there.
+# NOT NEEDED HAS BE RECREATED WITHIN ROBOTSCCHEUDERL
 def robotRequest(robot, destination):
     robotlocation = robot.location
 
@@ -206,7 +207,7 @@ env = simpy.Environment()
 # Test Instances of Areas
 floor = Floor(env)
 inventory = Inventory(env)
-robotScheduler = RobotScheduler(env)
+robotScheduler = RobotScheduler(env, floor)
 orderControl = OrderControl(env)
 #picker = Picker(Point(1,5), inventory)
 #packer = Packer(Point(1,10))
