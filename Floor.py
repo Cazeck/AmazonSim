@@ -111,7 +111,7 @@ class Floor:
         distance = self.shippingdockcorner.y - self.pickerlocation.y
         # Make the beltArea one left of Picker, and all the way to Shipping Dock
         #print(f'BeltArea start points are {self.picker.x - 1} and {self.picker.y} distance {distance}')
-        self.beltAreas.append(BeltArea(Point(self.pickerlocation.x - 1, self.pickerlocation.y), distance))
+        self.beltAreas.append(BeltArea(self, Point(self.pickerlocation.x - 1, self.pickerlocation.y), distance))
 
     # returns the Cell at a desired Point
     def getCell(self, point):
@@ -335,11 +335,66 @@ class Floor:
             print(row, linePrint[row])
 
 
-
-#env = "meme"
-#floor = Floor(env)
-#floor.printMap()
+"""
+env = "meme"
+floor = Floor(env)
+floor.printMap()
+picker = floor.getCell(Point(1, 5)).getContents()[0]
+packer = floor.getCell(Point(1, 10)).getContents()[0]
 #print('\n')
+bin1 = Bin()
+item1 = 'MEME'
+item2 = 'ooi'
+bin1.addToBin(item1)
+bin1.addToBin(item2)
+
+belt1 = floor.getCell(Point(0, 5)).getContents()[0]
+print(belt1)
+
+picker.putOnBelt(bin1, belt1)
+
+floor.printMap()
+print('\n\n')
+beltArea = floor.beltAreas[0]
+beltArea.moveBelt()
+#beltArea.moveBelt()
+#print(belt1.getBeltLocation())
+floor.printMap()
+
+print('\n\n')
+beltArea.moveBelt()
+beltArea.moveBelt()
+beltArea.moveBelt()
+beltArea.moveBelt()
+floor.printMap()
+
+packer.takeOffBelt(bin1, belt1)
+
+print('\n\n')
+floor.printMap()
+
+package = packer.createPackage(bin1, '99 Grove Street')
+packer.putOnBelt(package, belt1)
+
+print('\n\n')
+floor.printMap()
+
+
+beltArea.moveBelt()
+beltArea.moveBelt()
+beltArea.moveBelt()
+beltArea.moveBelt()
+beltArea.moveBelt()
+beltArea.moveBelt()
+beltArea.moveBelt()
+
+print('\n\n')
+floor.printMap()
+"""
+
+#package = packer.createPackage(bin1, '104 memest5re')
+
+#packer.putOnBelt(package)
 
 #robot1 = floor.robots[0]
 #print(robot1)

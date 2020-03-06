@@ -13,6 +13,9 @@ class Belt:
     def resumeBelt(self):
         self.moving = True
 
+    def setLocation(self, location):
+        self.location = location
+
     # Returns a Cell
     def getBeltLocation(self):
         return self.location

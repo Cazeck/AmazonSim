@@ -13,9 +13,10 @@ class BeltArea:
 
     # For now it will just be a straight line
     # Picker --> Packer --> Shipping Dock
-    def __init__(self, startpoint, length):
+    def __init__(self, floor, startpoint, length):
         self.areacontents = []      # List of Cells
         self.belts = []             # List of belts
+        self.floor = floor
         self.startpoint = startpoint
         self.length = length
         self.endpoint = Point(startpoint.x, startpoint.y + length)
@@ -34,7 +35,7 @@ class BeltArea:
         for i in self.areacontents:
             BeltArea.belt_sections += 1                     # Each belt section has a unique number
             i.setContents(Belt(self.belt_sections, i))      # Every Cell receives a Belt
-            self.belts.append(i.getContents())              # Add that Belt to the List of Belts
+            self.belts.append(i.getContents()[0])              # Add that Belt to the List of Belts
 
     def getCell(self, point):
         for i in self.areacontents:
@@ -64,36 +65,94 @@ class BeltArea:
         firstBeltLocation = self.startpoint
         lastBeltLocationY = self.startpoint.y + self.length - 1
 
+        # Let BeltArea Know what Floor is so we can call it and change Cells
+
         #firstCell = self.areacontents[0]
         #newCell = None
+        firstCell = self.floor.getCell((self.startpoint))
+        firstPoint = firstCell.cellLocation()
 
-        count = 0
+        #count = 0
 
         for belt in self.belts:
             #print(count)
-            # If first Belt
-            if belt.location.y == firstBeltLocation.y:
-                # Need to save the Cell located at
-                firstCell = belt.location
-                newCell = self.belts[count + 1].location
-                #newCell = self.areacontents[1]
-                #print(f'moving {belt} to {newCell}')
-                belt.location = newCell
-                count += 1
 
-            # If last belt
-            elif belt.location.y == lastBeltLocationY:
-                # need to move it to the front
-                #print(f'moving {belt} to {firstCell}')
-                belt.location = firstCell
-                count += 1
+            beltcell = belt.getBeltLocation()
+            #print(f'Beltcell is: {beltcell}')
 
+            nextbeltcell = self.floor.getCell(Point(beltcell.x, beltcell.y + 1))
+            #print(f'Next Belt is:" {nextbeltcell}')
+
+            # If belt has an object on it
+            if belt.content is not None:
+
+                beltcontent = belt.getContent()
+                #print(f'Belt{belt.id} is carrying {beltcontent}')
+
+                # If first Belt
+                #if belt.location.y == firstBeltLocation.y:
+
+                # If last belt
+                if belt.location.y == lastBeltLocationY:
+                    # Need to move this Belt to First
+                    firstCell.setContents(belt)
+                    belt.setLocation(firstCell)
+                    #belt.setLocation(firstCell.cellLocation())
+                    # there should not be an item here, but for testing sake
+                    firstCell.setContents(beltcontent)
+
+                    # Removing Belt from current Cell
+                    beltcell.removeContent(belt)
+                    beltcell.removeContent(beltcontent)
+
+                    """
+                    # need to move it to the front
+                    #print(f'moving {belt} to {firstCell}')
+                    belt.location = firstCell
+                    count += 1
+                    """
+
+                # Any belt that isn't the end
+                else:
+                    # Adding Belt to next Cell
+                    nextbeltcell.setContents(belt)
+                    belt.setLocation(nextbeltcell)
+                    #belt.setLocation(nextbeltcell.cellLocation())
+
+                    # Adding Item on Belt to next Cell
+                    nextbeltcell.setContents(beltcontent)
+
+                    # Removing Belt from current Cell
+                    beltcell.removeContent(belt)
+                    beltcell.removeContent(beltcontent)
+
+                    """
+                    # Move forward one Point
+                    newCell = self.belts[count+1].location
+                    #print(f'moving {belt} to {newCell}')
+                    belt.location = newCell
+                    count += 1
+                    """
+
+            # If Belt is moving on its own
             else:
-                # Move forward one Point
-                newCell = self.belts[count+1].location
-                #print(f'moving {belt} to {newCell}')
-                belt.location = newCell
-                count += 1
+                # If last belt
+                if belt.location.y == lastBeltLocationY:
+                    # Need to move this Belt to First
+                    firstCell.setContents(belt)
+                    belt.setLocation(firstCell)
+
+                    # Removing Belt from current Cell
+                    beltcell.removeContent(belt)
+
+
+                else:
+                    # Adding Belt to next Cell
+                    nextbeltcell.setContents(belt)
+                    belt.setLocation(nextbeltcell)
+
+                    # Removing Belt from current Cell
+                    beltcell.removeContent(belt)
 
         self.sortBelt()
 
@@ -103,7 +162,7 @@ class BeltArea:
         if point.x is not self.startpoint.x:
             return False
 
-        if point.y > self.endpoint.y:
+        if point.y >= self.endpoint.y:
             return False
 
         if point.y < self.startpoint.y:

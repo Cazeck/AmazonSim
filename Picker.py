@@ -8,10 +8,11 @@ from Point import Point
 
 class Picker:
 
-    def __init__(self, location, inventory):
+    def __init__(self, location):
         self.location = location
         self.beltlocation = Point(location.x-1, location.y)
-        self.inventory = inventory
+        self.robotlocation = Point(location.x+1, location.y)
+        #self.inventory = inventory
 
     def getPickLocation(self):
         return self.location
@@ -20,17 +21,24 @@ class Picker:
         # Picker knows belt will be one unit to their left
         return self.beltlocation
 
+    def getPickerRobotLocation(self):
+        # Picker know the Robot should arrive one unit to their left
+        return self.robotlocation
+
+
     # Takes an Item off of the Shelf and adds it to the Bin
     # Will also update Inventory and Order about the Item
-    def pickItem(self, shelf, item, order, orderbin):
+    def pickItem(self, shelf, item, order, orderbin, inventory):
 
         item.changeShelf(None)              # Item is no longer on a shelf
         shelf.removeItem(item)              # Remove Item from shelf contents
-        orderbin.addToBin(item)                  # Item is in the Bin
+        orderbin.addToBin(item)             # Item is in the Bin
         order.addItem(item)                 # Order now knows this item has been collected
-        self.inventory.removeItem(item)     # Remove the item from inventory
+        inventory.removeItem(item)          # Remove the item from inventory
 
     def putOnBelt(self, orderbin, belt):
+        beltcell = belt.getBeltLocation()
         belt.addObject(orderbin)
+        beltcell.setContents(orderbin)
         orderbin.changeLocation(belt.getBeltLocation())
         print(f'Bin has been placed on Belt {belt.id}')
