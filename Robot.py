@@ -15,6 +15,7 @@ class Robot:
     atcharger = 7
 
     def __init__(self, name, startinglocation):
+        self.cell = None
         self.location = startinglocation
         self.status = 0             # start off idle
         self.destination = None       # Will be a point object List of points? Next point needed to go you 1 by 1
@@ -30,9 +31,19 @@ class Robot:
     def getDestination(self):
         return self.destination
 
+    def setCell(self, cell):
+        self.cell = cell
+        self.setLocation(cell.cellLocation())
+
+    def getCell(self):
+        return self.cell
+
     # Return where the Robot is at
     def getLocation(self):
         return self.location
+
+    def setLocation(self, newlocation):
+        self.location = newlocation
 
     # Return the robots current status
     def getStatus(self):
@@ -61,6 +72,8 @@ class Robot:
 
     # Method will be used by RobotScheduler every tick
     # to move the robot by one point
+    # Might not need this if RobotScheduler one works better
+    # CAN DELETE ONCE SIMULATION IS FIGURED OUT
     def moveByOne(self):
         # if holding a shelf
         #if self.destination != [] and self.getholdingShelf() is not None:
@@ -70,9 +83,18 @@ class Robot:
 
         # if moving by itself
         if self.destination != []:
+
+            # Need to change the contents of the Cell we are in and the next
+            #print(f'current Cell is: {self.cell}')
+            #print(f'next Cell is: {self.destination[0]}')
+
             #print("| Moving from: " + str(self.location) + " To: " + str(self.destination[0]))
             self.location = self.destination[0]     # Get next point in the list
             del self.destination[0]                 # Remove first point in the list
+
+
+
+
 
         else:
             print("Robot is already at destination!")
