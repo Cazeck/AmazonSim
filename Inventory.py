@@ -1,13 +1,20 @@
+
+import random
+from Catalog import Catalog
+from Item import Item
 from ShelfArea import ShelfArea
 from Shelf import Shelf
-from Item import Item
 
 class Inventory:
     # Create a list with all stocked items in it
-    def __init__(self, env):
+    def __init__(self, env, floor):
         self.clock = env
+        self.floor = floor
         self.stock = []
-        self.populate()
+        self.catalog = Catalog()
+
+        self.populateStock()
+        self.stockShelves()
 
     # Adds an item to the stock
     # item = the item to add
@@ -60,15 +67,35 @@ class Inventory:
                 return i.getShelf()
         return None      # item not found with matching name
 
+    # From Master / Warehouse / Sim
+    # Can delete old after test
+    def stockShelves(self):
+        # All Items in Inventory
+        for item in self.stock:
+            random_sarea = random.choice(self.floor.shelfareas)                     # Choose one of the ShelfAreas
 
-    def populate(self):
+            # Choose a random Shelf within above Shelf Area
+            rcell_content = random.choice(random_sarea.areacontents).getContents()  # Content of Cell (List)
+            random_shelf = rcell_content[0]                                         # Shelf within Cell
+            random_shelf.addItem(item)                                              # Put Item on Shelf
+            item.changeShelf(random_shelf.getShelfNo())                             # Tell Item which Shelf it's on
+
+    # Adds (One!) of each Item from the Catalog into stock
+    # Will work out duplicates
+    def populateStock(self):
+        catalog = self.catalog.itemList
+
+        for item in catalog:
+            self.stock.append(item)
+
+        # ---- Original Below -------
         # Creates a variety of items and then adds them to random shelves
-        testitems = [Item('Bagpipe', 51009), Item('Tic-Tac', 57678), Item('Hydras Lament', 11008), Item('Socks', 13009),
-                     Item('Puck', 34678), Item('Shifters Shield', 81035), Item('Tic-Tac', 57678), Item('Singular Orange', 34231)]
+        #testitems = [Item('Bagpipe', 51009), Item('Tic-Tac', 57678), Item('Hydras Lament', 11008), Item('Socks', 13009),
+        #             Item('Puck', 34678), Item('Shifters Shield', 81035), Item('Tic-Tac', 57678), Item('Singular Orange', 34231)]
 
         # Add the Items into Stock
-        for i in testitems:
-            self.stock.append(i)
+        #for i in testitems:
+        #    self.stock.append(i)
 
         # Do we now distribute this across shelves in Master
         # in Master
