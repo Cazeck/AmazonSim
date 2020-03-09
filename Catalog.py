@@ -45,3 +45,19 @@ class Catalog:
 
             ]
 
+    def getItemList(self):
+        return self.itemList
+
+    def createItem(self, item_name):
+        name = None
+        serial = None
+
+        # Search itemList to see if something with matching name
+        for i in self.itemList:
+            if i.itemName == item_name:
+                name = i.itemName
+                serial = i.serialNumber
+
+        return Item(serial, name)
+
+

@@ -5,6 +5,7 @@ them into a Bin for each order. When all of the items for an order have been
 gathered, the picker will move that Bin onto the Belt to go to the Packer
 """
 from Point import Point
+from Bin import Bin
 
 class Picker:
 
@@ -25,6 +26,10 @@ class Picker:
         # Picker know the Robot should arrive one unit to their left
         return self.robotlocation
 
+    # Creates a new bin object
+    def grabBin(self):
+        new_bin = Bin()
+        return new_bin
 
     # Takes an Item off of the Shelf and adds it to the Bin
     # Will also update Inventory and Order about the Item
@@ -41,4 +46,3 @@ class Picker:
         belt.addObject(orderbin)
         beltcell.setContents(orderbin)
         orderbin.changeLocation(belt.getBeltLocation())
-        print(f'Bin has been placed on Belt {belt.id}')

@@ -87,7 +87,7 @@ class BeltArea:
             if belt.content is not None:
 
                 beltcontent = belt.getContent()
-                #print(f'Belt{belt.id} is carrying {beltcontent}')
+                #   print(f'Belt{belt.id} is carrying {beltcontent}')
 
                 # If first Belt
                 #if belt.location.y == firstBeltLocation.y:

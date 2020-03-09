@@ -9,8 +9,11 @@ class Order:
         self.collected = []         # collected will be a list of items that have already been grabbed (in Bin)
         self.shipaddr = address
         self.status = "None"
-        self.numoforders += 1
-        self.orderid = self.numoforders
+
+        self.orderid = Order.numoforders + 1
+        Order.numoforders += 1
+
+
         self.fulfilled = False      # are all of the needed items in the bin / packaged?
         self.shipped = False        # has this order been fully completed
 

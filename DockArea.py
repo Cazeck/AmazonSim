@@ -10,7 +10,6 @@ class DockArea:
     def shipPackage(self, belt, package):
         beltcell = belt.getBeltLocation()       # Location of Belt at DockArea
         belt.removeObject(package)              # Remove Package from Belt
-        beltcell.removeContent(package)         # Remove Package from Cell
-        print(f'Package has been shipped to {package.destination}')
+        # Needed? when package display is worked out
+        #beltcell.removeContent(package)         # Remove Package from Cell
         del package                             # Delete Package from Memory
-        print('Package Deleted')

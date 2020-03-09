@@ -2,8 +2,7 @@
 from Shelf import Shelf
 from Point import Point
 from Cell import Cell
-from Robot import Robot
-from SimRandom import SimRandom
+
 
 # Shelf area has information where every shelf is at all times
 # is also used to create and shelves
@@ -108,10 +107,12 @@ class ShelfArea:
     def findShelf(self, shelfNo):
         # For each cell in
         for i in self.areacontents:
-            if i.getContents().getShelfNo() == shelfNo:
+            cellcont = i.getContents()[0]
+            if cellcont.getShelfNo() == shelfNo:
+            #if i.getContents().getShelfNo() == shelfNo:
                 #print("Found shelf at")
                 #print(i.getContents())
-                return i.getContents()
+                return i.getContents()[0]
 
 
 

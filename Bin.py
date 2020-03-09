@@ -2,7 +2,7 @@
 class Bin:
 
     binsize = 5
-    numofbins = 0
+    numofbins = 1
 
     def __init__(self):
 

@@ -30,12 +30,15 @@ class RobotScheduler:
 
     # Find all robots that are currently idle
     def idleRobots(self):
+        #idle_bots = []
         for i in self.robotList:
             if i.status == 0:
+                #idle_bots.append(i)
                 self.availableRobots.append(i)
             else:
                 continue  # this robot is busy, check another
 
+        #self.availableRobots = idle_bots
         return self.availableRobots
 
     # Returns first available robot in list
@@ -127,8 +130,7 @@ class RobotScheduler:
 
 
     # Asks Floor to calculate path from robot -> destination
-    # Calls moveByOne until it is at target location
-    def robotToDestination(self, robot, destination):
+    def robotPath(self, robot, destination):
         robotlocation = robot.getLocation()
 
         # Get Path by Calling Floor's GetPath
@@ -139,9 +141,14 @@ class RobotScheduler:
 
         # Moving the Robot to location
         # Running moveByOne multiple times  to emulate ticks for time being
-        for num in range(0, pathlength):
-            self.moveByOne(robot)
+        #for num in range(0, pathlength):
+        #    self.moveByOne(robot)
 
+    # Make a Robot move to its set destination
+    def moveRobotToDest(self, robot):
+        path_length = len(robot.getDestination())
+        for num in range(0, path_length):
+            self.moveByOne(robot)
 
     # New Version of Robot's
     def moveByOne(self, robot):
@@ -151,7 +158,7 @@ class RobotScheduler:
 
             currentcell = robot.getCell()
             nextcell = self.floor.getCell(robot.getDestination()[0])
-            shelfheld = robot.getholdingShelf()
+            shelfheld = robot.getHoldingShelf()
 
             #print(f'Current Cell is: {currentcell}')
             #print(f'Next Cell is: {nextcell}')

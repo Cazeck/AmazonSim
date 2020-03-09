@@ -24,6 +24,12 @@ class Inventory:
     def removeItem(self, item):
         self.stock.remove(item)
 
+        # If there are no more of this Item in Stock
+        if self.numberInStockName(item.itemName) == 0:
+            # Resupply that Item
+            self.restockItem(item.itemName)
+
+
     # Finds out how many of an item is in stock
     # itemName is the item you want
     def numberInStockName(self, itemName):
@@ -43,11 +49,6 @@ class Inventory:
 
         return count
 
-    # Test Method
-    # Returns the item in stock at specified index number
-    def getItemAtIndex(self, index):
-        item = self.stock[index]
-        return item
 
     # Finds a shelf that has a given item on it
     # To be called by Orders subset
@@ -79,6 +80,25 @@ class Inventory:
             random_shelf = rcell_content[0]                                         # Shelf within Cell
             random_shelf.addItem(item)                                              # Put Item on Shelf
             item.changeShelf(random_shelf.getShelfNo())                             # Tell Item which Shelf it's on
+
+    # Takes an Item name, checks to see if it is in the catalog, and creates a new Item object if so
+    # Then places this item onto a random shelf
+    def restockItem(self, item):
+        new_item = self.catalog.createItem(item)
+
+        #print(f'new Item is: {new_item}')
+
+        random_sarea = random.choice(self.floor.shelfareas)  # Choose one of the ShelfAreas
+
+        # Choose a random Shelf within above Shelf Area
+        rcell_content = random.choice(random_sarea.areacontents).getContents()  # Content of Cell (List)
+        random_shelf = rcell_content[0]                                         # Shelf within Cell
+        random_shelf.addItem(new_item)                                              # Put Item on Shelf
+        new_item.changeShelf(random_shelf.getShelfNo())                          # Tell Item which Shelf it's on
+        #print(f'{item} has been added to Shelf {random_shelf.getShelfNo()}')
+
+        self.addItem(new_item)
+
 
     # Adds (One!) of each Item from the Catalog into stock
     # Will work out duplicates

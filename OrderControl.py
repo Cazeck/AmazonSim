@@ -41,14 +41,16 @@ class OrderControl:
         order_address = self.randomAddress()
         # Choose a random number between 2 - 3 (# of Items)
         order_size = random.randrange(2, 4)
-        # Choose a random Item from Catalog 2 - 3 times
+        # Choose a random Item name from Catalog 2 - 3 times
         for i in range(0, order_size):
             item = random.choice(self.inventory.catalog.getItemList())
-            order_items.append(item)
+            item_name = item.getItemName()
+            order_items.append(item_name)
 
         # Create Order instance
         new_order = Order(order_items, order_address)
         # Add Order to Queue
+        new_order.status = "In Queue"
         self.addOrder(new_order)
         #return new_order
 

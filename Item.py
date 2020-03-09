@@ -2,7 +2,7 @@
 class Item:
 
     # Every item has a name, serial number, and shelf it belongs on (no shelf at the moment)
-    def __init__(self, itemName, serialNumber):
+    def __init__(self, serialNumber, itemName):
         self.itemName = itemName
         self.serialNumber = serialNumber
         self.shelf = None
@@ -20,8 +20,8 @@ class Item:
         return self.shelf
 
     # Change the shelf than an Item is on
-    def changeShelf(self, newShelf):
-        self.shelf = newShelf
+    def changeShelf(self, newshelf):
+        self.shelf = newshelf
 
     # Umambiguous reperestation of object, used for debugging / loggin - seen for developers
     # Item('Bong', 67090, 4)

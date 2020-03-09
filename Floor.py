@@ -2,7 +2,6 @@ from Point import Point
 from Cell import Cell
 from ShelfArea import ShelfArea
 from BeltArea import BeltArea
-from SimRandom import SimRandom
 from Robot import Robot
 from Shelf import Shelf
 from Belt import Belt
@@ -145,8 +144,9 @@ class Floor:
     def getReceivingDock(self):
         return self.receivingdockcorner
 
-    def getCharger(self):
-        return self.charger
+    # HARD CODED FOR THE TIME BEING
+    def getChargerLocation(self):
+        return Point(5, 0)
 
     def getBeltArea(self):
         beltarea = []
@@ -235,7 +235,7 @@ class Floor:
                 if shelfnumber == shelf.shelfNumber:
                     return sArea
 
-            print("Shelf not in this sArea, checking next")
+            #print("Shelf not in this sArea, checking next")
         print("Cannot find a shelf with that number")
         # Throw an exception here
 

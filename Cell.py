@@ -29,11 +29,24 @@ class Cell(Point):
 
     # Returns whats currently in the cell
     def getContents(self):
+        if len(self.content) == 1:
+            #if isinstance(self.content[0], DockArea):   # Specifically for Dock Area being scuffed right now
+                #return self.content
+            #else:
+            return self.content
+
+        if len(self.content) == 2:
+            return self.content
+
+        # should be empty List at this point
         return self.content
 
     # Adds an object to the cell
     def setContents(self, object):
         self.content.append(object)
+
+    def removeContent(self, object):
+        self.content.remove(object)
 
     def __repr__(self):
         return "Cell('{}', '{}', {})".format(self.x, self.y, self.content)
@@ -84,11 +97,11 @@ class Cell(Point):
                 return result
 
             if (isinstance(self.content[0], Belt) and isinstance(self.content[1], Bin)) or (isinstance(self.content[1], Belt) and isinstance(self.content[0], Bin)):
-                result += " contains Robot and Shelf"
+                result += " contains Belt and Bin"
                 return result
 
             if (isinstance(self.content[0], Belt) and isinstance(self.content[1], Package)) or (isinstance(self.content[1], Belt) and isinstance(self.content[0], Package)):
-                result += " contains Robot and Shelf"
+                result += " contains Belt and Package"
                 return result
 
 

@@ -38,6 +38,9 @@ class Robot:
     def getCell(self):
         return self.cell
 
+    def  getName(self):
+        return self.robotName
+
     # Return where the Robot is at
     def getLocation(self):
         return self.location
@@ -58,7 +61,7 @@ class Robot:
         self.holdingShelf = None
 
     # Return the shelf that it is currently holding
-    def getholdingShelf(self):
+    def getHoldingShelf(self):
         return self.holdingShelf
 
     # Change status for Robot
@@ -74,7 +77,7 @@ class Robot:
     # to move the robot by one point
     # Might not need this if RobotScheduler one works better
     # CAN DELETE ONCE SIMULATION IS FIGURED OUT
-    def moveByOne(self):
+    #def moveByOne(self):
         # if holding a shelf
         #if self.destination != [] and self.getholdingShelf() is not None:
         #    # If holding a shelf, we need to also change the cells for the shelf as we move each tick
@@ -82,22 +85,22 @@ class Robot:
         #    self.getholdingShelf().resting = False
 
         # if moving by itself
-        if self.destination != []:
+     #   if self.destination != []:
 
             # Need to change the contents of the Cell we are in and the next
             #print(f'current Cell is: {self.cell}')
             #print(f'next Cell is: {self.destination[0]}')
 
             #print("| Moving from: " + str(self.location) + " To: " + str(self.destination[0]))
-            self.location = self.destination[0]     # Get next point in the list
-            del self.destination[0]                 # Remove first point in the list
+      #      self.location = self.destination[0]     # Get next point in the list
+       #     del self.destination[0]                 # Remove first point in the list
 
 
 
 
 
-        else:
-            print("Robot is already at destination!")
+        #else:
+       #     print("Robot is already at destination!")
 
     # Will tell the robot to start heading to a new destination
     def goToDest(self):
