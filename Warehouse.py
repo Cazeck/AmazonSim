@@ -13,15 +13,14 @@ class Warehouse(object):
 
     def __init__(self, env):
         random.seed(2)
-        self.clock = env           # SimPy environment for Event-Based Simulation
+        self.clock = env
         # Create Instances of main components
         self.floor = Floor(env)
         self.inventory = Inventory(env, self.floor)
         self.robot_scheduler = RobotScheduler(env, self.floor)
         self.order_control = OrderControl(env, self.inventory)
 
-    # Warehouse will possess all of the Simulation methods that replicate methods
-    # within the warehouse components. These are for the Event-Based Simulation
+    # Simulation methods for Event-Based Simulation
     def orderCreated(self, order):
         print(f'\nTick: {self.clock.now}'
               f'\nNew order has arrived!'
@@ -60,9 +59,9 @@ class Warehouse(object):
         # print(f'\nTick: {self.clock.now}\nRobot {robot.robotName} moved one unit')
         yield self.clock.timeout(1)
 
-    def robotAtLocation(self, robot):
+    def robotAtLocation(self, robot, destination):
         print(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.robotName} has arrived at destination')
+              f'\nRobot {robot.robotName} has arrived at {destination}')
         yield self.clock.timeout(1)
 
     def robotPickUpShelf(self, robot, shelf):
@@ -73,11 +72,6 @@ class Warehouse(object):
     def robotPutDownShelf(self, robot, shelf):
         print(f'\nTick: {self.clock.now}'
               f'\nRobot {robot.robotName} has put down Shelf {shelf.shelfNumber}')
-        yield self.clock.timeout(1)
-
-    def robotAtCharger(self, robot):
-        print(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.robotName} has returned to charger')
         yield self.clock.timeout(1)
 
     def pickerGrabsItem(self, item, shelf):
@@ -103,6 +97,11 @@ class Warehouse(object):
     def packerTakeOffBelt(self, belt):
         print(f'\nTick: {self.clock.now}'
               f'\nPacker takes Bin off of belt {belt.id}')
+        yield self.clock.timeout(1)
+
+    def packerPutOnBelt(self, belt):
+        print(f'\nTick: {self.clock.now}'
+              f'\nPacker puts Package onto belt {belt.id}')
         yield self.clock.timeout(1)
 
     def createPackage(self, package):
@@ -134,8 +133,7 @@ def simulation(env):
     print('Warehouse is created')
 
     while True:
-        yield env.timeout(2)
-        #print(f'\nTick {env.now}')
+        yield env.timeout(1)
 
         num_of_orders = len(order_queue)
 
@@ -144,8 +142,6 @@ def simulation(env):
             print('There are no Orders. Creating one now')
             # Generate a random Order
             order_control.genRandomOrder()
-            #new_order
-            #yield
 
         # If there are Orders in queue, start fulfilling them
         if num_of_orders > 0:
@@ -185,7 +181,7 @@ def simulation(env):
                     for num in range(0, path_length):
                         robot_scheduler.moveByOne(robot)
                         yield env.process(warehouse.robotMovement(robot))
-                    yield env.process(warehouse.robotAtLocation(robot))
+                    yield env.process(warehouse.robotAtLocation(robot, "Shelf location"))
 
                     # Pick up Shelf with Robot
                     robot.pickUpShelf(shelf)
@@ -204,7 +200,7 @@ def simulation(env):
                     for num in range(0, path_length):
                         robot_scheduler.moveByOne(robot)
                         yield env.process(warehouse.robotMovement(robot))
-                    yield env.process(warehouse.robotAtLocation(robot))
+                    yield env.process(warehouse.robotAtLocation(robot, "Picker"))
 
                     # Have Picker take the Item off of the Shelf and add it to Bin
                     holding_shelf = robot.getHoldingShelf()
@@ -225,7 +221,7 @@ def simulation(env):
                     for num in range(0, path_length):
                         robot_scheduler.moveByOne(robot)
                         yield env.process(warehouse.robotMovement(robot))
-                    yield env.process(warehouse.robotAtLocation(robot))
+                    yield env.process(warehouse.robotAtLocation(robot, "Shelf home location"))
 
                     # Put down Shelf with Robot
                     robot.putDownShelf(shelf)
@@ -243,11 +239,10 @@ def simulation(env):
                     for num in range(0, path_length):
                         robot_scheduler.moveByOne(robot)
                         yield env.process(warehouse.robotMovement(robot))
-                    yield env.process(warehouse.robotAtLocation(robot))
+                    yield env.process(warehouse.robotAtLocation(robot, "Charger"))
 
                     # Robot is now charging
                     robot_status = 7
-                    yield env.process(warehouse.robotAtCharger(robot))
 
                 # Item is not in stock
                 else:
@@ -284,6 +279,10 @@ def simulation(env):
                 order_package = packer.createPackage(order_bin, order.getShipAddr())
                 yield env.process(warehouse.createPackage(order_package))
 
+                # Put new Package onto Belt
+                packer.putOnBelt(order_package, first_belt)
+                yield env.process(warehouse.packerPutOnBelt(first_belt))
+
                 packer_to_dock = belt_area.endpoint.y - packer.beltlocation.y - 1
 
                 # Moving Belt with Package on it to the Shipping Dock
@@ -298,13 +297,14 @@ def simulation(env):
 
                 # Now delete Order from OrderControl
                 order_control.removeOrder(order)
+
                 print('\n----------------------- END OF ORDER -----------------------')
 
 
 def run():
     env = simpy.Environment()
     env.process(simulation(env))
-    env.run(until=1100)
+    env.run(until=322)
 
 
 run()

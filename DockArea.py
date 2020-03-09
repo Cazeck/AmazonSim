@@ -11,5 +11,5 @@ class DockArea:
         beltcell = belt.getBeltLocation()       # Location of Belt at DockArea
         belt.removeObject(package)              # Remove Package from Belt
         # Needed? when package display is worked out
-        #beltcell.removeContent(package)         # Remove Package from Cell
+        beltcell.removeContent(package)         # Remove Package from Cell
         del package                             # Delete Package from Memory
