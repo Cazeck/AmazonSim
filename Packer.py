@@ -37,13 +37,13 @@ class Packer:
         belt.removeObject(orderbin)
         beltcell.removeContent(orderbin)
         orderbin.changeLocation("Off of Belt")
-        print(f'Bin has been taken off of Belt {belt.id}')
+        #print(f'Bin has been taken off of Belt {belt.id}')
 
     def putOnBelt(self, package, belt):
         beltcell = belt.getBeltLocation()
         belt.addObject(package)
         beltcell.setContents(package)
-        print(f'Package has been placed on Belt {belt.id}')
+        #print(f'Package has been placed on Belt {belt.id}')
 
 """
 Package is just a box that will be filled with Order Items 

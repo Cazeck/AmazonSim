@@ -13,7 +13,7 @@ from Bin import Bin
 
 # Creating a mock floor for testing purposes
 class Floor:
-
+    """         20 x 20
     warehousewidth = 20
     warehousedepth = 20
 
@@ -23,8 +23,19 @@ class Floor:
     shippingdockcorner = Point(0, 18)
     chargers = [Charger(Point(5, 0)), Charger(Point(6, 0)), Charger(Point(7, 0)), Charger(Point(8, 0)), Charger(Point(9, 0))]
     robots = [Robot('A', Point(5, 0)), Robot('B', Point(6, 0)), Robot('C', Point(7, 0)), Robot('D', Point(8, 0)), Robot('E', Point(9, 0))]
+    """
+    # 10 x 10
+    warehousewidth = 10
+    warehousedepth = 10
 
-
+    pickerlocation = Point(1, 7)
+    packerlocation = Point(1, 4)
+    shippingdock = DockArea([Point(0, 0), Point(1, 0), Point(0, 1), Point(1, 1)])
+    shippingdockcorner = Point(0, 1)
+    chargers = [Charger(Point(2, 9)), Charger(Point(3, 9)), Charger(Point(4, 9)), Charger(Point(5, 9)),
+                Charger(Point(6, 9))]
+    robots = [Robot('A', Point(2, 9)), Robot('B', Point(3, 9)), Robot('C', Point(4, 9)), Robot('D', Point(5, 9)),
+              Robot('E', Point(6, 9))]
 
     def __init__(self, env):
         self.clock = env
@@ -37,9 +48,18 @@ class Floor:
         self.populateShelfArea()
         self.populateBeltArea()
 
+        # original
+        # for y in range(0, self.warehousedepth):
+        #    for x in range(0, self.warehousewidth):
+        #        point = Point(x, y)  # is the (x,y)  # Ended up switched, but it works like this for now
+        #        # check if this point already has a cell in a shelf area
+        #        # and if so, just use the existing cell
+        #        cell = Cell(point)  # will be the new cell created for this point
         # Create a Cell for each location in Floor
-        for y in range(0, self.warehousedepth):
-            for x in range(0, self.warehousewidth):
+
+        # Trying to switch back to (o
+        for x in range(0, self.warehousewidth):
+            for y in range(0, self.warehousedepth):
                 point = Point(x, y)  # is the (x,y)  # Ended up switched, but it works like this for now
                 # check if this point already has a cell in a shelf area
                 # and if so, just use the existing cell
@@ -87,11 +107,12 @@ class Floor:
 
                 # Creating BeltArea
                 for b in self.beltAreas:
-                    #print(f'checking point: {point}')
+                    # print(f'checking point: {point}')
+                    # print(b.isWithin(point))
                     if b.isWithin(point):
-                        #print(f'Point is: {point}')
+                        # print(f'Point is: {point}')
                         cell = b.getCell(point)
-                        #print(f'Cell is: {cell}')
+                        # print(f'Cell is: {cell}')
                         assert cell is not None
 
 
@@ -101,16 +122,24 @@ class Floor:
 
     # generates a few shelf areas on the floor
     def populateShelfArea(self):
-        self.shelfareas.append(ShelfArea(Point(10, 10), 10))
-        self.shelfareas.append(ShelfArea(Point(10, 15), 10))
-        #self.shelfareas.append(ShelfArea(Point(20, 160), 10, self.randogen))
+        # 20 x 20
+        # self.shelfareas.append(ShelfArea(Point(10, 10), 10))
+        # self.shelfareas.append(ShelfArea(Point(10, 15), 10))
+
+        # 10 x 10
+        self.shelfareas.append(ShelfArea(Point(5, 1), 5))
+        self.shelfareas.append(ShelfArea(Point(5, 5), 5))
 
     # generates the belt are on the floor
     def populateBeltArea(self):
-        distance = self.shippingdockcorner.y - self.pickerlocation.y
+        #distance = self.shippingdockcorner.y + self.pickerlocation.y
+        distance = self.pickerlocation.y - self.shippingdockcorner.y
+        #print(f'distance {distance}')
+        #print(Point(self.pickerlocation.x - 1, self.pickerlocation.y))
         # Make the beltArea one left of Picker, and all the way to Shipping Dock
         #print(f'BeltArea start points are {self.picker.x - 1} and {self.picker.y} distance {distance}')
         self.beltAreas.append(BeltArea(self, Point(self.pickerlocation.x - 1, self.pickerlocation.y), distance))
+        #print(self.beltAreas[0].belts[5].getBeltLocation())
 
     # returns the Cell at a desired Point
     def getCell(self, point):
@@ -146,7 +175,7 @@ class Floor:
 
     # HARD CODED FOR THE TIME BEING
     def getChargerLocation(self):
-        return Point(5, 0)
+        return Point(2, 9)
 
     def getBeltArea(self):
         beltarea = []
@@ -251,9 +280,15 @@ class Floor:
         rowContents = []
         # In reverse to go bottom --> top
         #for i in range(0, self.warehousewidth):
-        for i in range(self.warehousewidth - 1, -1, -1):
+        """ Original """
+        #for i in range(self.warehousedepth - 1, -1, -1):
+        #    yCoord = i
+        #    for j in range(0, self.warehousewidth):
+
+        # Reversed so that Points will match how Display presents 3/10
+        for i in range(0, self.warehousedepth):
             yCoord = i
-            for j in range(0, self.warehousedepth):
+            for j in range(0, self.warehousewidth):
                 xCoord = j
                 #meme.append(f'Point {xCoord}, {yCoord}')
                 cellAtCoord = self.allpoints[f'Point x:{xCoord} y:{yCoord}']
@@ -335,71 +370,102 @@ class Floor:
             print(row, linePrint[row])
 
 
-"""
-env = "meme"
-floor = Floor(env)
-floor.printMap()
-picker = floor.getCell(Point(1, 5)).getContents()[0]
-packer = floor.getCell(Point(1, 10)).getContents()[0]
-#print('\n')
-bin1 = Bin()
-item1 = 'MEME'
-item2 = 'ooi'
-bin1.addToBin(item1)
-bin1.addToBin(item2)
+    # copy of printMap but instead output a formatted string
+    def displayMap(self):
+        linePrint = {}
+        rowContents = []
+        finalString = ''
+        # In reverse to go bottom --> top
+        #for i in range(0, self.warehousewidth):
+        for i in range(self.warehousewidth - 1, -1, -1):
+            yCoord = i
+            for j in range(0, self.warehousedepth):
+                xCoord = j
+                #meme.append(f'Point {xCoord}, {yCoord}')
+                cellAtCoord = self.allpoints[f'Point x:{xCoord} y:{yCoord}']
+                objList = cellAtCoord.getContents()
 
-belt1 = floor.getCell(Point(0, 5)).getContents()[0]
-print(belt1)
+                #print(f'At x{xCoord}, y{yCoord} is obj:{objList}')
 
-picker.putOnBelt(bin1, belt1)
-
-floor.printMap()
-print('\n\n')
-beltArea = floor.beltAreas[0]
-beltArea.moveBelt()
-#beltArea.moveBelt()
-#print(belt1.getBeltLocation())
-floor.printMap()
-
-print('\n\n')
-beltArea.moveBelt()
-beltArea.moveBelt()
-beltArea.moveBelt()
-beltArea.moveBelt()
-floor.printMap()
-
-packer.takeOffBelt(bin1, belt1)
-
-print('\n\n')
-floor.printMap()
-
-package = packer.createPackage(bin1, '99 Grove Street')
-packer.putOnBelt(package, belt1)
-
-print('\n\n')
-floor.printMap()
+                # If Contents is empty, move to the next Cell
+                if len(objList) == 0:
+                    rowContents.append('[      ]')
+                    continue
 
 
-beltArea.moveBelt()
-beltArea.moveBelt()
-beltArea.moveBelt()
-beltArea.moveBelt()
-beltArea.moveBelt()
-beltArea.moveBelt()
-beltArea.moveBelt()
+                if len(objList) == 1:
+                    objAtCoord = objList[0]
 
-print('\n\n')
-floor.printMap()
-"""
+                    if isinstance(objAtCoord, Shelf):
+                        rowContents.append(f"Shelf {objAtCoord.shelfNumber}")
 
-#package = packer.createPackage(bin1, '104 memest5re')
+                    if isinstance(objAtCoord, Robot):
+                        rowContents.append(f"Robot {objAtCoord.robotName}")
 
-#packer.putOnBelt(package)
+                    if isinstance(objAtCoord, Belt):
+                        rowContents.append(f"Belt {objAtCoord.id}")
 
-#robot1 = floor.robots[0]
-#print(robot1)
-#robot1.setDestination([Point(5, 1), Point(5, 2), Point(5, 3)])
+                    if isinstance(objAtCoord, Picker):
+                        rowContents.append(f"Picker")
+
+                    if isinstance(objAtCoord, Packer):
+                        rowContents.append(f"Packer")
+
+                    if isinstance(objAtCoord, Charger):
+                        rowContents.append(f"Charger")
+
+                    if isinstance(objAtCoord, DockArea):
+                        rowContents.append(f'Dock')
+
+                # If contents are:
+                if len(objList) == 2:
+
+                    # [Charger, Robot]
+                    if isinstance(objList[0], Charger) and isinstance(objList[1], Robot):
+                        rowContents.append(f'Char/Rob{objList[1].robotName}')
+
+                    # [Robot, Charger]
+                    if isinstance(objList[0], Robot) and isinstance(objList[1], Charger):
+                        rowContents.append(f'Char/Rob{objList[0].robotName}')
+
+                    # [Shelf, Robot]
+                    if isinstance(objList[0], Shelf) and isinstance(objList[1], Robot):
+                        rowContents.append(f'Sh{objList[0].shelfNumber}/Rob{objList[1].robotName}')
+
+                    # [Robot, Shelf]
+                    if isinstance(objList[0], Robot) and isinstance(objList[1], Shelf):
+                        rowContents.append(f'Sh{objList[1].shelfNumber}/Rob{objList[0].robotName}')
+
+                    # [Belt, Bin]
+                    if isinstance(objList[0], Belt) and isinstance(objList[1], Bin):
+                        rowContents.append(f'Bel{objList[0].id}/Bin{objList[1].binId}')
+
+                    # [Bin, Belt]
+                    if isinstance(objList[0], Bin) and isinstance(objList[1], Belt):
+                        rowContents.append(f'Bel{objList[1].id}/Bin{objList[0].binId}')
+
+                    # [Belt, Package]
+                    if isinstance(objList[0], Belt) and isinstance(objList[1], Package):
+                        rowContents.append(f'Bel{objList[0].id}/Package')
+
+                    # [Package, Belt]
+                    if isinstance(objList[0], Package) and isinstance(objList[1], Belt):
+                        rowContents.append(f'Bel{objList[1].id}/Package')
+
+            linePrint[f'Row {i}'] = rowContents
+            # Reset for next row
+            rowContents = []
+
+        for row in linePrint:
+            finalString += str(row) + ' ' + str(linePrint[row]) + '\n'
+            #print('\n', row, linePrint[row])
+            #print(row, linePrint[row])
+
+        return finalString
+
+# env = 's'
+# floor = Floor(env)
 
 
-#robot1.moveByOne()
-#print(robot1)
+# floor.printMap()
+# print('\n\n')

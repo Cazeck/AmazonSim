@@ -19,11 +19,12 @@ class BeltArea:
         self.floor = floor
         self.startpoint = startpoint
         self.length = length
-        self.endpoint = Point(startpoint.x, startpoint.y + length)
+        self.endpoint = Point(startpoint.x, startpoint.y - length)
 
         # Building BeltArea Cells
-        # Going North / South
-        for i in range(startpoint.y, startpoint.y + length):
+        # Going South / North
+        for i in range(startpoint.y, startpoint.y - length, -1):
+
             cellToAdd = Cell(Point(startpoint.x, i))
             self.areacontents.append(cellToAdd)
 
@@ -34,7 +35,11 @@ class BeltArea:
     def populate(self):
         for i in self.areacontents:
             BeltArea.belt_sections += 1                     # Each belt section has a unique number
+
+            # print(f'Adding  to Cell {i}')
             i.setContents(Belt(self.belt_sections, i))      # Every Cell receives a Belt
+            # print(f'Adding {i.getContents()[0]} to Cell {i}')
+            # print(i.getContents())
             self.belts.append(i.getContents()[0])              # Add that Belt to the List of Belts
 
     def getCell(self, point):
@@ -56,14 +61,14 @@ class BeltArea:
     # Sorting list so that the first belt location always appear first
     # Sorts by Cell's y Location
     def sortBelt(self):
-        self.belts.sort(key=lambda belt: belt.location.y)
+        self.belts.sort(key=lambda belt: -belt.location.y)
 
 
     # Moves every Belt in the Belt Area forward one Cell
     # The last belt is moved to the first position for now
     def moveBelt(self):
         firstBeltLocation = self.startpoint
-        lastBeltLocationY = self.startpoint.y + self.length - 1
+        lastBeltLocationY = self.startpoint.y - self.length + 1
 
         # Let BeltArea Know what Floor is so we can call it and change Cells
 
@@ -71,7 +76,6 @@ class BeltArea:
         #newCell = None
         firstCell = self.floor.getCell((self.startpoint))
         firstPoint = firstCell.cellLocation()
-
         #count = 0
 
         for belt in self.belts:
@@ -80,7 +84,7 @@ class BeltArea:
             beltcell = belt.getBeltLocation()
             #print(f'Beltcell is: {beltcell}')
 
-            nextbeltcell = self.floor.getCell(Point(beltcell.x, beltcell.y + 1))
+            nextbeltcell = self.floor.getCell(Point(beltcell.x, beltcell.y - 1))
             #print(f'Next Belt is:" {nextbeltcell}')
 
             # If belt has an object on it
@@ -162,10 +166,10 @@ class BeltArea:
         if point.x is not self.startpoint.x:
             return False
 
-        if point.y >= self.endpoint.y:
+        if point.y <= self.endpoint.y:
             return False
 
-        if point.y < self.startpoint.y:
+        if point.y > self.startpoint.y:
             return False
 
         else:

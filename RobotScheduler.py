@@ -8,7 +8,9 @@ class RobotScheduler:
     def __init__(self, env, floor):
         self.clock = env
         self.floor = floor
-        self.robotList = [Robot('A', Point(5, 0)), Robot('B', Point(6, 0)), Robot('C', Point(7, 0)), Robot('D', Point(8, 0)), Robot('E', Point(9, 0))]
+        # for 20 x 20
+        # self.robotList = [Robot('A', Point(5, 0)), Robot('B', Point(6, 0)), Robot('C', Point(7, 0)), Robot('D', Point(8, 0)), Robot('E', Point(9, 0))]
+        self.robotList = [Robot('A', Point(2, 9)), Robot('B', Point(3, 9)), Robot('C', Point(4, 9)), Robot('D', Point(5, 9)), Robot('E', Point(6, 9))]
         self.availableRobots = []
 
         self.populate()
