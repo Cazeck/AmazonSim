@@ -23,7 +23,7 @@ Warehouse is main meme
 class Warehouse(object):
 
     def __init__(self, env):
-        random.seed(2)
+        random.seed(3)
         self.clock = env
         # Create Instances of main components
         self.floor = Floor(env)
@@ -144,6 +144,33 @@ class Display_Picker:
                                            ((self.y2 - self.y1) / 2 + self.y1), text=name)
         self.canvas.update()
 
+class Display_Bin:
+    def __init__(self, canvas, point, unit_size, name):
+        self.point = point
+        self.unit_size = unit_size
+        self.name = name
+        self.x1 = point.x * unit_size
+        self.y1 = point.y * unit_size
+        self.x2 = self.x1 + unit_size
+        self.y2 = self.y1 + unit_size
+        self.canvas = canvas
+        self.bin = canvas.create_rectangle(self.x1 + (self.unit_size * .20), self.y1 + (self.unit_size * .25),
+                                           self.x2 - (self.unit_size * .20), self.y2 - (self.unit_size * .25),
+                                           fill="gold", tags=name)
+        self.id = canvas.create_text(((self.x2 - self.x1) / 2 + self.x1),
+                                           ((self.y2 - self.y1) / 2 + self.y1), text=name)
+        self.canvas.update()
+
+    def move_bin(self, point):
+        # Move Up
+        if self.point.x == point.x and self.point.y > point.y:
+            self.canvas.move(self.bin, 0, (point.y - self.point.y) * self.unit_size)
+            self.canvas.move(self.id, 0, (point.y - self.point.y) * self.unit_size)
+            next_point = Point(self.point.x, self.point.y - 1)
+            self.point = next_point
+
+        self.canvas.update
+
 class Display_Packer:
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
@@ -159,6 +186,35 @@ class Display_Packer:
                                            ((self.y2 - self.y1) / 2 + self.y1), text=name)
         self.canvas.update()
 
+
+
+class Display_Package:
+    def __init__(self, canvas, point, unit_size, name):
+        self.point = point
+        self.unit_size = unit_size
+        self.name = name
+        self.x1 = point.x * unit_size
+        self.y1 = point.y * unit_size
+        self.x2 = self.x1 + unit_size
+        self.y2 = self.y1 + unit_size
+        self.canvas = canvas
+        self.package = canvas.create_rectangle(self.x1 + (self.unit_size * .25), self.y1 + (self.unit_size * .20),
+                                               self.x2 - (self.unit_size * .25), self.y2 - (self.unit_size * .20),
+                                               fill="tan", tags=name)
+        self.id = canvas.create_text(((self.x2 - self.x1) / 2 + self.x1),
+                                           ((self.y2 - self.y1) / 2 + self.y1), text=name)
+        self.canvas.update()
+
+    def move_package(self, point):
+        # Move Up
+        if self.point.x == point.x and self.point.y > point.y:
+            self.canvas.move(self.package, 0, (point.y - self.point.y) * self.unit_size)
+            self.canvas.move(self.id, 0, (point.y - self.point.y) * self.unit_size)
+            next_point = Point(self.point.x, self.point.y - 1)
+            self.point = next_point
+
+        self.canvas.update()
+
 class Display_Dock:
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
@@ -167,7 +223,7 @@ class Display_Dock:
         self.x2 = self.x1 + unit_size
         self.y2 = self.y1 + unit_size
         self.canvas = canvas
-        self.robot = canvas.create_rectangle(self.x1, self.y1, self.x2, self.y2, fill="gray", tags=name)
+        self.robot = canvas.create_rectangle(self.x1, self.y1, self.x2, self.y2, fill="slategray3", tags=name)
         self.robot_id = canvas.create_text(((self.x2 - self.x1) / 2 + self.x1),
                                            ((self.y2 - self.y1) / 2 + self.y1), text=name)
         self.canvas.update()
@@ -394,12 +450,12 @@ def getDisplayShelf(shelf_object):
 
     return display_shelf
 
+
 def rotateBelt():
     belt_length = len(BELT_LIST)
     #print(f'Len {belt_length}')
     count = 0
     for belt in BELT_LIST:
-        print(f'\nBelt {belt.name}')
         if count == belt_length - 1:
             belt.move_belt(Point(belt.point.x, belt.point.y + belt_length - 1))
 
@@ -411,6 +467,23 @@ def rotateBelt():
 
     # Need to Sort belts by y (Highest first)
     BELT_LIST.sort(key=lambda belt: -belt.point.y)
+
+
+def grabBin(point):
+    NEW_BIN = Display_Bin(grid, point, UNIT_SIZE, 'Bin')
+    return NEW_BIN
+
+
+def createPackage(point):
+    NEW_PACKAGE = Display_Package(grid, point, UNIT_SIZE, 'Pkg')
+    return NEW_PACKAGE
+
+
+def deleteObject(display_object):
+    grid.delete(display_object.name)
+    grid.delete(display_object.id)
+    grid.update()
+
 
 # Setup Warehouse
 if show_animation:
@@ -481,20 +554,6 @@ if show_animation:
                   SHELF_16, SHELF_17, SHELF_18, SHELF_19, SHELF_20]
 
 
-def testDisplay(env):
-    nextx = 7
-    while True:
-        yield env.timeout(1)
-        print(f'Tick: {env.now}')
-
-        if env.now % 2 == 0:
-            #print(f'even {env.now}')
-            ROBOT_5.move_robot(Point(9, nextx))
-
-        nextx += 1
-
-
-
 
 def simulation(env):
     warehouse = Warehouse(env)
@@ -508,8 +567,6 @@ def simulation(env):
     packer = floor.getPacker()
     belt_area = floor.beltAreas[0]
     dock_area = floor.shippingdock
-
-    # Do we need to generate the Display here?
 
     print('Warehouse is created')
 
@@ -656,6 +713,8 @@ def simulation(env):
 
                 # Tell Picker to put Bin on Belt
                 picker.putOnBelt(order_bin, first_belt)
+                # Create Animation Bin
+                ORDER_BIN = grabBin(picker.beltlocation)
                 yield env.process(warehouse.pickerPutOnBelt(first_belt))
 
                 # Distance from Picker to Packer
@@ -663,8 +722,9 @@ def simulation(env):
 
                 # Moving Belt with Bin on it to the Packer
                 for num in range(0, picker_to_packer):
-                    print(f' Tick {env.now} we start moving Belt. Time {num} ')
                     belt_area.moveBelt()
+                    # Bin Animation
+                    ORDER_BIN.move_bin(first_belt.getBeltCoord())
                     # Belt Animation
                     rotateBelt()
                     yield env.process(warehouse.beltMovement())
@@ -672,10 +732,14 @@ def simulation(env):
 
                 # Tell Packer to take Bin off of Belt
                 packer.takeOffBelt(order_bin, first_belt)
+                # Delete Bin
+                deleteObject(ORDER_BIN)
                 yield env.process(warehouse.packerTakeOffBelt(first_belt))
 
                 # Tell Packer to create a Package from the contents of Bin
                 order_package = packer.createPackage(order_bin, order.getShipAddr())
+                # Create Animation Package
+                PACKAGE = createPackage(packer.beltlocation)
                 yield env.process(warehouse.createPackage(order_package))
 
                 # Put new Package onto Belt
@@ -687,6 +751,8 @@ def simulation(env):
                 # Moving Belt with Package on it to the Shipping Dock
                 for num in range(0, packer_to_dock):
                     belt_area.moveBelt()
+                    # Package Animation
+                    PACKAGE.move_package(first_belt.getBeltCoord())
                     # Belt Animation
                     rotateBelt()
                     yield env.process(warehouse.beltMovement())
@@ -694,6 +760,8 @@ def simulation(env):
 
                 # Take Package off of Belt and Ship it to Address
                 dock_area.shipPackage(first_belt, order_package)
+                # Delete Package
+                deleteObject(PACKAGE)
                 yield env.process(warehouse.shipPackage(order_package))
 
                 # Now delete Order from OrderControl
@@ -701,19 +769,11 @@ def simulation(env):
 
                 print('\n----------------------- END OF ORDER -----------------------')
 
-                floor.printMap()
-
 
 def run():
     env = simpy.RealtimeEnvironment(factor=.25)
-    #env.process(testDisplay(env))
-    #env.run(until=10)
-
-    # Original Sim
-    #env = simpy.Environment()
     env.process(simulation(env))
-    env.run(until=180)
-
+    env.run(until=119)
 
 
 run()
