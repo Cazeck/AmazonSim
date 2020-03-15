@@ -1,60 +1,141 @@
-import Item
 
 class Shelf:
-    # Class Variable, applies to all instances
-    maxItems = 5
-    numofshelves = 0
+    """
+    Shelf class represents the shelves in the warehouse that contain the items used to fulfill orders.
+
+    These shelves can be picked up by Robot objects and moved around the warehouse
+
+    Class Variables:
+        max_items: A integer representing the maximum amount of Items that shelf_stock can possess
+        num_of_shelves: A integer used to count the total number of shelves created
+        give each Shelf instance a unique shelve_number value
+
+    Attributes:
+        shelf_number: A integer representing the number of a shelf
+        home_location: Point object that is the original location the shelf was located at
+        shelf_stock: A list that will consist of Item objects as they are placed on the shelf
+        resting: A boolean indicating if a shelf is being carried by a Robot or not
+
+    """
+
+    max_items = 15
+    num_of_shelves = 0
 
     def __init__(self, number, home):
-        # Both of these will be Point Objects
-        # Location of where the shelf could be at any time
-        # Where to return to
-        self.shelfNumber = number
-        self.shelfStock = []
-        self.homeLocation = home
-        self.resting = True   # Whether or not the shelf is moving
+        """
+        Inits Shelf with a number and a home location
 
-        Shelf.numofshelves += 1
+        Args:
+            number: A integer to be used as the name of the shelf (Ex: Shelf 1)
+            home: A Point object marking where to return the shelf to if moved
 
-    # Adds an item onto the shelf, check number of times on shelf to not overflow
+        """
+        self.shelf_number = number
+        self.home_location = home
+        self.shelf_stock = []
+        self.resting = True
+        Shelf.num_of_shelves += 1
+
     def addItem(self, item):
-        if len(self.shelfStock) == self.maxItems:
-            # Not sure what to do here yet, but need to not add the item and try to find a new shelf
-            print('This shelf is full: Cannot put this item here')
+        """
+        Adds an Item object onto the Shelf, as long as it is not full
+
+        Args:
+            item: A Item object that will be placed onto the shelf
+
+        Raises:
+            Exception: Shelf is full
+
+        """
+        if len(self.shelf_stock) == self.max_items:
+            raise Exception('This shelf is full: Cannot put this item here')
 
         else:
-            #print('Adding item to shelf ' + str(item))
-            self.shelfStock.append(item)
-            # Give an item it's shelf number here
+            self.shelf_stock.append(item)
 
     def removeItem(self, item):
-        self.shelfStock.remove(item)
+        """
+        Remove an Item object from the Shelf
+
+        Args:
+            item: A Item object that will be removed from the shelf
+
+        """
+        self.shelf_stock.remove(item)
 
     # If a item with matching name is on shelf, return it
     def findItem(self, name):
-        for item in self.shelfStock:
-            if name == item.itemName:
+        """
+        Returns an Item on the Shelf with a matching name
+
+        Args:
+            name: A string with an item's name
+
+        Returns:
+            item: A Item object that's name matches the item argument
+
+        """
+        for item in self.shelf_stock:
+            if name == item.getItemName():
                 return item
 
     def getHomeLocation(self):
-        return self.homeLocation
+        """
+        Returns the home location of the Shelf object
+
+        Returns:
+            The Point object, home_location of the shelf object
+
+        """
+        return self.home_location
 
     def getShelfNo(self):
-        return self.shelfNumber
+        """
+        Returns the shelf number of the Shelf object
+
+        Returns:
+            The shelf_number of the shelf object
+
+        """
+        return self.shelf_number
 
     def onShelf(self):
-        return self.shelfStock
+        """
+        Returns the stock of the Shelf object
 
+        Returns:
+            The list of Items that Shelf currently possesses
 
-    # Umambiguous reperestation of object, used for debugging / loggin - seen for developers
-    # Item('Bong', 67090, 4)
+        """
+        return self.shelf_stock
+
     def __repr__(self):
-        return "Shelf('{}', '{}', {}, {})".format(self.shelfNumber, self.homeLocation, self.resting, self.shelfStock)
+        """
+        Unambiguous representation of Shelf object
 
-    # readable representation of an object, used for display to end users
-    # Item: Hydras Lament - Serial No: 11008 - Shelf: None
+        Used for debugging and logging
+
+        Returns:
+            In the format: Shelf(shelf_number, home_location, resting, shelf_stock)
+            Ex: Shelf(11, Point(1, 2), True, [Items])
+
+        """
+        return "Shelf('{}', '{}', {}, {})".format(self.shelf_number, self.home_location, self.resting, self.shelf_stock)
+
     def __str__(self):
-        return '| Shelf: {} -  HomeLoc: {} - Resting: {} \n| Stock: {}'.format(self.shelfNumber, self.homeLocation, self.resting, self.shelfStock)
+        """
+        Readable representation of Shelf object
+
+        Used for display
+
+        Returns:
+            In the format:
+            Shelf: 11 - HomeLoc: Point(1, 2), True
+            Stock: [Item, Item, Item]
+
+        """
+        return 'Shelf: {} -  HomeLoc: {} - Resting: {} \nStock: {}'.format(self.shelf_number, self.home_location,
+                                                                           self.resting, self.shelf_stock)
 
 
 
