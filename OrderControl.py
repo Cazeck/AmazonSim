@@ -1,42 +1,85 @@
+
 import random
 from Order import Order
 
 
-# Going to function similarly to RobotScheduler but handling orders instead
-
 class OrderControl:
+    """
+    OrderControl class tracks the progress of an order from arrival to fulfillment
 
-    def __init__(self, env, inv):
+    Attributes:
+       clock: Reference to the SimPy simulation environment
+       inventory: Reference to the Inventory subset
+       all_orders: List of Order objects that are needed to be fulfilled
+       current_order: Order object that we are currently working with
+    """
+    def __init__(self, env, inventory):
+        """
+        Inits OrderControl with the SimPy environment and Inventory
+
+        Args:
+            env: SimPy simulation environment
+            inventory: Inventory object so we can communicate with this subset
+        """
         self.clock = env
-        self.inventory = inv
-        self.allOrders = []     # a List of orders, dictionary might be necessary
-        self.currentOrder = None
+        self.inventory = inventory
+        self.all_orders = []
+        self.current_order = None
 
-        #self.populate()
+    def addOrder(self, new_order):
+        """
+        Adds an new Order to the list of Orders to be fulfilled
 
-    def addOrder(self, order):
-        # a check to see if there is a duplicate order?
-        self.allOrders.append(order)
+        Args:
+            new_order: Order object requesting specific Items from the warehouse
+        """
+        self.all_orders.append(new_order)
 
-    def removeOrder(self, order):
-        # check to see if an order has been shipped?
-        # set order status to cancelled?
-        self.allOrders.remove(order)
+    def removeOrder(self, order_to_remove):
+        """
+        Remove an Order from the list of Orders when completed
 
-    # Update the status of an individual order
-    def updateOrder(self, order, newStatus):
-        order.updateStatus(newStatus)
+        Args:
+            order_to_remove: A Order object that will be removed from the list
+        """
+        self.all_orders.remove(order_to_remove)
 
-    # Receive status of an indiviual order
+    def updateOrder(self, order, new_status):
+        """
+        Updates the status of an individual Order
+
+        Args:
+            order: Order object we are updating the status of
+            new_status: String for the Order's new status
+        """
+        order.updateStatus(new_status)
+
     def orderStatus(self, order):
+        """
+        Returns the status of the Order object
+
+        Args:
+            order: Order object we are receiving the status for
+
+        Returns:
+            The status of the Order object
+        """
         return order.getStatus()
 
-    # Current order being worked on
     def getCurrentOrder(self):
-        return self.currentOrder
+        """
+        Returns the status of the current Order being worked on
 
-    # Creates a Random Order objects with Items from Catalog
+        Returns:
+            The status of the Order object
+        """
+        return self.current_order
+
     def genRandomOrder(self):
+        """
+        Creates a random Order object with Items from Catalog and adds it to
+        OrderControl's list of Orders to complete
+        """
         order_items = []
         order_address = self.randomAddress()
         # Choose a random number between 2 - 3 (# of Items)
@@ -52,10 +95,14 @@ class OrderControl:
         # Add Order to Queue
         new_order.status = "In Queue"
         self.addOrder(new_order)
-        #return new_order
 
-    # Generate random address for an Order
     def randomAddress(self):
+        """
+        Creates a random address from a variety of popular street name and endings
+
+        Returns:
+             order_address: A string representing an address
+        """
         address_number = random.randrange(1, 500)
         street_names = ['First', 'Second', 'Third', 'Park', 'Main', 'Oak', 'Pine', 'Maple', 'Cedar', 'Elm', 'Lake']
         address_name = random.choice(street_names)
@@ -65,14 +112,3 @@ class OrderControl:
         order_address = str(address_number) + ' ' + str(address_name) + ' ' + str(address_street)
 
         return order_address
-
-    def populate(self):
-        # Create some order instances   #Add Bagpipe bad to order1
-        testorders = [Order(['Socks', 'Puck'], "99 Grove Street"),
-                    Order(['Tic-Tac', 'Singular Orange'], "290 Whipple Street"),
-                    Order(['Hydras Lament', 'Shifters Shield', "Tic-Tac"], "432 Archer Avenue")]
-
-
-        for i in testorders:
-            i.updateStatus('In Queue')
-            self.addOrder(i)
