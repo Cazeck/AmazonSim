@@ -18,7 +18,6 @@ class Item:
         Args:
             serial_number: The serial number for this item
             item_name: The name of the item
-
         """
         self.serial_number = serial_number
         self.item_name = item_name
@@ -30,7 +29,6 @@ class Item:
 
         Returns:
             The item_name of the item object
-
         """
         return self.item_name
 
@@ -40,7 +38,6 @@ class Item:
 
         Returns:
             The serial_number of the Item object
-
         """
         return self.serial_number
 
@@ -50,7 +47,6 @@ class Item:
 
         Returns:
             The Shelf object that this Item is located at
-
         """
         return self.shelf
 
@@ -60,10 +56,6 @@ class Item:
 
         Args:
             new_shelf: A Shelf object that now contains this Item
-
-        Returns:
-            nothing
-
         """
         self.shelf = new_shelf
 
@@ -76,7 +68,6 @@ class Item:
         Returns:
             In the format: Item(item_name, serial_number, shelf)
             Ex: Item("TV Stand", 364422, Shelf 13)
-
         """
         return "Item('{}', '{}', Shelf {})".format(self.item_name, self.serial_number, self.shelf)
 
@@ -88,7 +79,6 @@ class Item:
 
         Returns:
             In the format: Item: "TV Stand" - Serial No: 364422 - Shelf: 13
-
         """
         return 'Item: {} - Serial No: {} - Shelf: {}'.format(self.item_name, self.serial_number, self.shelf.getShelfNo())
 

@@ -1,219 +1,201 @@
-"""
-BeltArea has information about every Belt section at all times
-and is also used to create the belt
-"""
-from Belt import Belt
+
 from Point import Point
 from Cell import Cell
+from Belt import Belt
 
 
 class BeltArea:
+    """
+    BeltArea class tracks information about all Belt objects at all times and
+    is also responsible for creating and moving the Belt objects
 
+    For now, the BeltArea is simply a straight line to keep things simple. The
+    Belt starts next to the Picker and ends at the Shipping Dock. The Belt will
+    move from Picker --> Packer --> Shipping Dock
+
+    Class Variables:
+        belt_sections: A integer used to count the total number of belt sections
+
+    Attributes:
+        area_contents: List of Cells that contain Belt objects
+        belts: List of Belt objects within the BeltArea
+        floor: Reference to the Floor component of the warehouse
+        length: How many Belt sections the Belt area consists of
+        start_point: Point location of the first position of the BeltArea
+        end_point: Point location of the last position of the BeltArea
+    """
     belt_sections = 0
 
-    # For now it will just be a straight line
-    # Picker --> Packer --> Shipping Dock
-    def __init__(self, floor, startpoint, length):
-        self.areacontents = []      # List of Cells
-        self.belts = []             # List of belts
+    def __init__(self, floor, start_point, length):
+        """
+        Inits BeltArea with a starting point and the size of the belt
+
+        Using the start_point and length, we calculate the end_point of the Belt
+
+        With this information, we also create the Cells of the BeltArea during initialization
+
+        Args:
+            floor: Floor object, reference to the Floor component
+            start_point: A Point object marking where to start the creation of the Belt
+            length: Integer representing the number of Belt objects needed
+        """
+        self.area_contents = []
+        self.belts = []
         self.floor = floor
-        self.startpoint = startpoint
+        self.start_point = start_point
         self.length = length
-        self.endpoint = Point(startpoint.x, startpoint.y - length)
+        self.end_point = Point(start_point.x, start_point.y - length)
 
-        # Building BeltArea Cells
-        # Going South / North
-        for i in range(startpoint.y, startpoint.y - length, -1):
-
-            cellToAdd = Cell(Point(startpoint.x, i))
-            self.areacontents.append(cellToAdd)
+        # Building BeltArea Cells (South --> North)
+        for i in range(start_point.y, start_point.y - length, -1):
+            cellToAdd = Cell(Point(start_point.x, i))
+            self.area_contents.append(cellToAdd)
 
         self.populate()
 
-    # Fills the BeltArea with Belt objects in each Cell
-    # Called by constructor
     def populate(self):
-        for i in self.areacontents:
-            BeltArea.belt_sections += 1                     # Each belt section has a unique number
+        """
+        Places a unique Belt object within each Cell of the BeltArea
 
-            # print(f'Adding  to Cell {i}')
-            i.setContents(Belt(self.belt_sections, i))      # Every Cell receives a Belt
-            # print(f'Adding {i.getContents()[0]} to Cell {i}')
-            # print(i.getContents())
-            self.belts.append(i.getContents()[0])              # Add that Belt to the List of Belts
+        Called by the constructor
+        """
+        for i in self.area_contents:
+            BeltArea.belt_sections += 1
+            # Every Cell receives a Belt
+            i.setContents(Belt(self.belt_sections, i))
+            self.belts.append(i.getContents()[0])
 
     def getCell(self, point):
-        for i in self.areacontents:
-            if i.x == point.x and i.y == point.y:
-                return i
+        """
+        Returns the Cell object at a specified point
 
-    # Returns the belt located at the Point Location
+        Args:
+            point: Point object of Cell location
+
+        Returns:
+            Cell located at point location
+        """
+        for cell in self.area_contents:
+            if cell.x == point.x and cell.y == point.y:
+                return cell
+
     def getBeltAt(self, point):
-        if self.isWithin(point):
-            for b in self.belts:
-                bcoord = b.getBeltCoord()
-                if bcoord.x == point.x and bcoord.y == point.y:
-                    #print(f'Belt {b} is located at {point}')
-                    return b
-        else:
-            print(f"No Belt located at point {point}")
+        """
+        Returns the Belt object at a specified point
 
-    # Sorting list so that the first belt location always appear first
-    # Sorts by Cell's y Location
+        Args:
+            point: Point object of belt location
+
+        Returns:
+            Belt located at point location
+
+        Raises:
+            Exception: No Belt in BeltArea matching point
+        """
+        if self.isWithin(point):
+            for belt in self.belts:
+                b_coord = belt.getBeltCoord()
+                if b_coord.x == point.x and b_coord.y == point.y:
+                    return belt
+        else:
+            raise Exception(f"No Belt in BeltArea matching point {point}")
+
     def sortBelt(self):
+        """
+        Sorts BeltArea's belt list so that the Belt section at starting location always appears first
+
+        The sort is done by the comparing each Cell's y coordinate within the BeltArea
+        """
         self.belts.sort(key=lambda belt: -belt.location.y)
 
 
-    # Moves every Belt in the Belt Area forward one Cell
-    # The last belt is moved to the first position for now
     def moveBelt(self):
-        firstBeltLocation = self.startpoint
-        lastBeltLocationY = self.startpoint.y - self.length + 1
-
-        # Let BeltArea Know what Floor is so we can call it and change Cells
-
-        #firstCell = self.areacontents[0]
-        #newCell = None
-        firstCell = self.floor.getCell((self.startpoint))
-        firstPoint = firstCell.cellLocation()
-        #count = 0
+        """
+        Rotates the Belt, moves each Belt section forward one Cell. The last Belt section
+        is moved to the front of the Belt
+        """
+        first_belt_location = self.start_point
+        last_belt_location_y = self.start_point.y - self.length + 1
+        first_cell = self.floor.getCell(self.start_point)
+        first_point = first_cell.cellLocation()
 
         for belt in self.belts:
-            #print(count)
 
-            beltcell = belt.getBeltLocation()
-            #print(f'Beltcell is: {beltcell}')
-
-            nextbeltcell = self.floor.getCell(Point(beltcell.x, beltcell.y - 1))
-            #print(f'Next Belt is:" {nextbeltcell}')
+            belt_cell = belt.getBeltLocation()
+            next_belt_cell = self.floor.getCell(Point(belt_cell.x, belt_cell.y - 1))
 
             # If belt has an object on it
             if belt.content is not None:
+                belt_content = belt.getContent()
 
-                beltcontent = belt.getContent()
-                #   print(f'Belt{belt.id} is carrying {beltcontent}')
+                # If last belt section
+                if belt.location.y == last_belt_location_y:
+                    # Need to move this Belt to first location
+                    first_cell.setContents(belt)
+                    belt.setLocation(first_cell)
 
-                # If first Belt
-                #if belt.location.y == firstBeltLocation.y:
-
-                # If last belt
-                if belt.location.y == lastBeltLocationY:
-                    # Need to move this Belt to First
-                    firstCell.setContents(belt)
-                    belt.setLocation(firstCell)
-                    #belt.setLocation(firstCell.cellLocation())
                     # there should not be an item here, but for testing sake
-                    firstCell.setContents(beltcontent)
+                    first_cell.setContents(belt_content)
 
                     # Removing Belt from current Cell
-                    beltcell.removeContent(belt)
-                    beltcell.removeContent(beltcontent)
+                    belt_cell.removeContent(belt)
+                    belt_cell.removeContent(belt_content)
 
-                    """
-                    # need to move it to the front
-                    #print(f'moving {belt} to {firstCell}')
-                    belt.location = firstCell
-                    count += 1
-                    """
-
-                # Any belt that isn't the end
+                # Any belt section that isn't the last section
                 else:
                     # Adding Belt to next Cell
-                    nextbeltcell.setContents(belt)
-                    belt.setLocation(nextbeltcell)
-                    #belt.setLocation(nextbeltcell.cellLocation())
+                    next_belt_cell.setContents(belt)
+                    belt.setLocation(next_belt_cell)
 
                     # Adding Item on Belt to next Cell
-                    nextbeltcell.setContents(beltcontent)
+                    next_belt_cell.setContents(belt_content)
 
                     # Removing Belt from current Cell
-                    beltcell.removeContent(belt)
-                    beltcell.removeContent(beltcontent)
+                    belt_cell.removeContent(belt)
+                    belt_cell.removeContent(belt_content)
 
-                    """
-                    # Move forward one Point
-                    newCell = self.belts[count+1].location
-                    #print(f'moving {belt} to {newCell}')
-                    belt.location = newCell
-                    count += 1
-                    """
-
-            # If Belt is moving on its own
+            # If Belt is moving on its own without an object
             else:
+
                 # If last belt
-                if belt.location.y == lastBeltLocationY:
-                    # Need to move this Belt to First
-                    firstCell.setContents(belt)
-                    belt.setLocation(firstCell)
+                if belt.location.y == last_belt_location_y:
+                    # Need to move this Belt to first location
+                    first_cell.setContents(belt)
+                    belt.setLocation(first_cell)
 
                     # Removing Belt from current Cell
-                    beltcell.removeContent(belt)
-
+                    belt_cell.removeContent(belt)
 
                 else:
                     # Adding Belt to next Cell
-                    nextbeltcell.setContents(belt)
-                    belt.setLocation(nextbeltcell)
+                    next_belt_cell.setContents(belt)
+                    belt.setLocation(next_belt_cell)
 
                     # Removing Belt from current Cell
-                    beltcell.removeContent(belt)
+                    belt_cell.removeContent(belt)
 
+        # Sort all of the Belt sections after Belt is finished moving for next time
         self.sortBelt()
 
-    # Returns a boolean if Point is within BeltArea
     def isWithin(self, point):
-        # if not in same x row as belt
-        if point.x is not self.startpoint.x:
+        """
+        Check to see if a Point is located within BeltArea
+
+        Args:
+            point: Point object that is the location we are looking for
+
+        Returns:
+            Boolean: Either True or False that the Point is located within BeltArea
+        """
+        # If not in same x row as Belt
+        if point.x is not self.start_point.x:
             return False
 
-        if point.y <= self.endpoint.y:
+        if point.y <= self.end_point.y:
             return False
 
-        if point.y > self.startpoint.y:
+        if point.y > self.start_point.y:
             return False
 
         else:
             return True
-
-
-#beltA = BeltArea(Point(0, 5), 5)
-#print(beltA.areacontents)
-
-#print('\n', beltA.belts)
-
-#print(beltA.getCell(Point(0,9)))
-
-"""
-beltA = BeltArea(Point(0,0), 5)     # 5 Sections from 0,0 to 0,4
-for i in beltA.belts:
-    print(i)
-
-#print("Belt One")
-beltA.belts[0].addObject('Meme')
-#print(beltA.belts[0])
-
-print('\nGoing to move the belt')
-beltA.moveBelt()
-for i in beltA.belts:
-    print(i)
-
-print('\nGoing to move the belt')
-beltA.moveBelt()
-for i in beltA.belts:
-    print(i)
-
-print('\nGoing to move the belt')
-beltA.moveBelt()
-for i in beltA.belts:
-    print(i)
-
-print('\nGoing to move the belt')
-beltA.moveBelt()
-for i in beltA.belts:
-    print(i)
-
-print('\nGoing to move the belt')
-beltA.moveBelt()
-for i in beltA.belts:
-    print(i)
-"""

@@ -8,6 +8,7 @@ class Robot:
 
         Attributes:
             robot_name: A string representing the name of the robot
+            charger_location: Point object that is the location the Robot should return to in order to charge
             location: Point object that is the current location of the robot
             cell: Cell object that is the robots current location on the Floor and display
             charging: A boolean indicating if the robot is at a charging location
@@ -28,6 +29,7 @@ class Robot:
 
         """
         self.robot_name = name
+        self.charger_location = starting_location
         self.location = starting_location
         self.cell = None
         self.charging = True            # Is True because robots start on a charging station
@@ -71,6 +73,15 @@ class Robot:
              The robot_name of the Robot object
          """
         return self.robot_name
+
+    def getChargerLocation(self):
+        """
+        Returns the point location of the Robot's Charger
+
+        Returns:
+            The Point object location of the Charger
+        """
+        return self.charger_location
 
     def getLocation(self):
         """

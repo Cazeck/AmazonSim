@@ -1,13 +1,32 @@
 
 import random
 from Catalog import Catalog
-from Item import Item
-from ShelfArea import ShelfArea
-from Shelf import Shelf
+
 
 class Inventory:
-    # Create a list with all stocked items in it
+    """
+    Inventory class tracks the total stock of all Items in the warehouse
+
+    Can place Items on Shelves and make orders for new Items if stock runs out
+
+    Attributes:
+        clock: Reference to SimPy simulation environment
+        floor: Reference to the Floor component
+        stock: A list of all Item objects within the warehouse
+        catalog: Catalog object that contains all possible Items used in the simulation
+    """
+
     def __init__(self, env, floor):
+        """
+        Inits Inventory with the simulation environment and a reference to warehouse Floor layout
+
+        During initialization, Inventory creates an instance of each Item in Catalog and distributes
+        them across random Shelf objects within the warehouse
+
+        Args:
+            env: SimPy simulation environment
+            floor: Floor object so we can communicate with this subset
+        """
         self.clock = env
         self.floor = floor
         self.stock = []
@@ -16,108 +35,142 @@ class Inventory:
         self.populateStock()
         self.stockShelves()
 
-    # Adds an item to the stock
-    # item = the item to add
     def addItem(self, item):
+        """
+        Adds an Item to the total stock of Inventory
+
+        Args:
+            item: Item object being added to stock
+        """
         self.stock.append(item)
 
     def removeItem(self, item):
+        """
+        Remove a specified Item from Inventory stock. If it was the last instance of that Item,
+        make an order to resupply that Item back into stock
+
+        Args:
+            item: Item object being removed
+        """
         self.stock.remove(item)
 
         # If there are no more of this Item in Stock
-        if self.numberInStockName(item.itemName) == 0:
+        if self.numberInStockName(item.getItemName()) == 0:
             # Resupply that Item
-            self.restockItem(item.itemName)
+            self.restockItem(item.getItemName())
 
+    def numberInStockName(self, item_name):
+        """
+        Check Inventory stock to see how many of a specific Item is in stock based off of name
 
-    # Finds out how many of an item is in stock
-    # itemName is the item you want
-    def numberInStockName(self, itemName):
+        Args:
+            item_name: Item object being counted
+
+        Returns:
+            count: Integer of how many Items matching item_name are in stock
+        """
         count = 0
         for i in self.stock:
-            if itemName == i.getItemName():
+            if item_name == i.getItemName():
                 count += 1
 
         return count
 
-    # Similar to above, but instead searches for serial number
-    def numberInStockSerial(self, serialNo):
+    def numberInStockSerial(self, serial_no):
+        """
+        Check Inventory stock to see how many of a specific Item is in stock based off of serial number
+
+        Args:
+            serial_no: Item object being counted
+
+        Returns:
+            count: Integer of how many Items matching serial_no are in stock
+        """
         count = 0
         for i in self.stock:
-            if serialNo == i.getSerialNumber():
+            if serial_no == i.getSerialNumber():
                 count += 1
 
         return count
 
+    def findItemSerial(self, serial_no):
+        """
+        Find an Shelf within the Warehouse that has a given Item on it. Searching by serial number
 
-    # Finds a shelf that has a given item on it
-    # To be called by Orders subset
-    # In: serial no of item --> Out: the number of the shelf that it is on
-    def findItemSerial(self, serialNo):
+        Args:
+            serial_no: Item object being searched for
+
+        Returns:
+            shelf_found: Integer that is the number of the Shelf holding an Item with matching serial_no
+
+        Raises:
+            Exception: Item cannot be found on a Shelf in warehouse
+        """
         for i in self.stock:
-            if serialNo == i.getSerialNumber():
-                return i.getShelf()
-        return None      # item not found with matching serial
+            if serial_no == i.getSerialNumber():
+                shelf_found = i.getShelf()
+                return shelf_found
 
-    # Finds a shelf that has a given item on it
-    # To be called by Orders subset
-    # In: name of item --> Out: the number of the shelf that it is on
-    def findItemName(self, iName):
+        raise Exception(f'Item {serial_no} cannot be found on a Shelf in the warehouse')
+
+    def findItemName(self, item_name):
+        """
+        Find an Shelf within the Warehouse that has a given Item on it. Searching by Item name
+
+        Args:
+            item_name: Item object being searched for
+
+        Returns:
+            shelf_found: Integer that is the number of the Shelf holding an Item with matching item_name
+
+        Raises:
+            Exception: Item cannot be found on a Shelf in warehouse
+        """
         for i in self.stock:
-            if iName == i.getItemName():
-                return i.getShelf()
-        return None      # item not found with matching name
+            if item_name == i.getItemName():
+                shelf_found = i.getShelf()
+                return shelf_found
+        raise Exception(f'Item {item_name} cannot be found on a Shelf in the warehouse')
 
-    # From Master / Warehouse / Sim
-    # Can delete old after test
     def stockShelves(self):
-        # All Items in Inventory
+        """
+        Takes every Item object within stock and places each Item on an random Shelf object within the warehouse
+        """
         for item in self.stock:
-            random_sarea = random.choice(self.floor.shelfareas)                     # Choose one of the ShelfAreas
+            # Choose one of the Shelf Areas randomly
+            random_sarea = random.choice(self.floor.shelf_areas)
 
             # Choose a random Shelf within above Shelf Area
-            rcell_content = random.choice(random_sarea.areacontents).getContents()  # Content of Cell (List)
-            random_shelf = rcell_content[0]                                         # Shelf within Cell
-            random_shelf.addItem(item)                                              # Put Item on Shelf
-            item.changeShelf(random_shelf.getShelfNo())                             # Tell Item which Shelf it's on
+            rcell_content = random.choice(random_sarea.area_contents).getContents()  # Content of Cell (List)
+            random_shelf = rcell_content[0]                                          # Shelf within Cell
+            random_shelf.addItem(item)                                               # Put Item on Shelf
+            item.changeShelf(random_shelf.getShelfNo())                              # Tell Item which Shelf it's on
 
-    # Takes an Item name, checks to see if it is in the catalog, and creates a new Item object if so
-    # Then places this item onto a random shelf
-    def restockItem(self, item):
-        new_item = self.catalog.createItem(item)
+    def restockItem(self, item_name):
+        """
+        Takes an Item name, checks to see if it is within the Catalog, and creates a new Item
+        object with the same name and places it ont a random Shelf within the warehouse
 
-        #print(f'new Item is: {new_item}')
+        Args:
+            item_name: A string representing the name of the Item we are restocking
+        """
+        new_item = self.catalog.createItem(item_name)
 
-        random_sarea = random.choice(self.floor.shelfareas)  # Choose one of the ShelfAreas
+        # Choose one of the Shelf Areas
+        random_sarea = random.choice(self.floor.shelf_areas)
 
         # Choose a random Shelf within above Shelf Area
-        rcell_content = random.choice(random_sarea.areacontents).getContents()  # Content of Cell (List)
-        random_shelf = rcell_content[0]                                         # Shelf within Cell
-        random_shelf.addItem(new_item)                                              # Put Item on Shelf
+        rcell_content = random.choice(random_sarea.area_contents).getContents()  # Content of Cell (List)
+        random_shelf = rcell_content[0]                                          # Shelf within Cell
+        random_shelf.addItem(new_item)                                           # Put Item on Shelf
         new_item.changeShelf(random_shelf.getShelfNo())                          # Tell Item which Shelf it's on
-        #print(f'{item} has been added to Shelf {random_shelf.getShelfNo()}')
 
         self.addItem(new_item)
 
-
-    # Adds (One!) of each Item from the Catalog into stock
-    # Will work out duplicates
     def populateStock(self):
-        catalog = self.catalog.itemList
-
+        """
+        Adds one instance of each Item object within the Catalog into Inventory stock
+        """
+        catalog = self.catalog.getItemList()
         for item in catalog:
             self.stock.append(item)
-
-        # ---- Original Below -------
-        # Creates a variety of items and then adds them to random shelves
-        #testitems = [Item('Bagpipe', 51009), Item('Tic-Tac', 57678), Item('Hydras Lament', 11008), Item('Socks', 13009),
-        #             Item('Puck', 34678), Item('Shifters Shield', 81035), Item('Tic-Tac', 57678), Item('Singular Orange', 34231)]
-
-        # Add the Items into Stock
-        #for i in testitems:
-        #    self.stock.append(i)
-
-        # Do we now distribute this across shelves in Master
-        # in Master
-    # Method for tick? not exactly sure how this will work out at the moment
-

@@ -1,9 +1,5 @@
 import random
 import simpy
-import numpy as np # a maths and plotting module
-import matplotlib.pyplot as plt
-import math
-import time
 import tkinter as tk
 
 # Warehouse Components
@@ -16,14 +12,24 @@ from RobotScheduler import RobotScheduler
 # Setup animation #
 show_animation = True
 
-"""
-Warehouse is main meme
-"""
-
 class Warehouse(object):
+    """
+    Warehouse class is the master class for this project. Warehouse creates an instance of each of the primary
+    components and allows them to communicate in order to fulfill Orders of Items that customers purchase
+
+    As of right now, the display is also generated in the outside scope of warehouse but uses all of the
+    components of warehouse as references
+
+    Attributes:
+        clock: Reference to SimPy simulation environment
+        floor: Reference to the Floor component
+        inventory:
+        robot_scheduler:
+        order_control:
+    """
 
     def __init__(self, env):
-        random.seed(3)
+        random.seed(5)
         self.clock = env
         # Create Instances of main components
         self.floor = Floor(env)
@@ -40,8 +46,8 @@ class Warehouse(object):
 
     def orderStarted(self, order):
         print(f'\nTick: {self.clock.now}'
-              f'\nStarting to process order {order.orderid}'
-              f'\n{order.orderitems}')
+              f'\nStarting to process order {order.order_id}'
+              f'\n{order.order_items}')
         yield self.clock.timeout(1)
 
     def startItem(self, item):
@@ -56,43 +62,42 @@ class Warehouse(object):
 
     def shelfLocationRequest(self, shelf):
         print(f'\nTick: {self.clock.now}'
-              f'\nFinding Shelf {shelf.shelfNumber} location on Floor')
+              f'\nFinding Shelf {shelf.getShelfNo()} location on Floor')
         yield self.clock.timeout(1)
 
     def robotPathRequest(self, robot):
         path_length = len(robot.destination)
         print(f'\nTick: {self.clock.now}'
-              f'\nGenerating path for Robot {robot.robotName}'
+              f'\nGenerating path for Robot {robot.getName()}'
               f'\nWill need to move {path_length} units')
         yield self.clock.timeout(1)
 
     def robotMovement(self, robot):
-        # print(f'\nTick: {self.clock.now}\nRobot {robot.robotName} moved one unit')
         yield self.clock.timeout(1)
 
     def robotAtLocation(self, robot, destination):
         print(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.robotName} has arrived at {destination}')
+              f'\nRobot {robot.getName()} has arrived at {destination}')
         yield self.clock.timeout(1)
 
     def robotPickUpShelf(self, robot, shelf):
         print(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.robotName} has picked up Shelf {shelf.shelfNumber}')
+              f'\nRobot {robot.getName()} has picked up Shelf {shelf.getShelfNo()}')
         yield self.clock.timeout(1)
 
     def robotPutDownShelf(self, robot, shelf):
         print(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.robotName} has put down Shelf {shelf.shelfNumber}')
+              f'\nRobot {robot.getName()} has put down Shelf {shelf.getShelfNo()}')
         yield self.clock.timeout(1)
 
     def pickerGrabsItem(self, item, shelf):
         print(f'\nTick: {self.clock.now}'
-              f'\nPicker takes {item} off of Shelf {shelf.shelfNumber} and places it in bin')
+              f'\nPicker takes {item} off of Shelf {shelf.getShelfNo()} and places it in bin')
         yield self.clock.timeout(1)
 
     def pickerPutOnBelt(self, belt):
         print(f'\nTick: {self.clock.now}'
-              f'\nPicker puts Bin on Belt {belt.id}')
+              f'\nPicker puts Bin on Belt {belt.getBeltNo()}')
         yield self.clock.timeout(1)
 
     def beltMovement(self):
@@ -102,17 +107,17 @@ class Warehouse(object):
 
     def beltAtLocation(self, belt, item, destination):
         print(f'\nTick: {self.clock.now}'
-              f'\nBelt {belt.id} with {item} is now at {destination}')
+              f'\nBelt {belt.getBeltNo()} with {item} is now at {destination}')
         yield self.clock.timeout(1)
 
     def packerTakeOffBelt(self, belt):
         print(f'\nTick: {self.clock.now}'
-              f'\nPacker takes Bin off of belt {belt.id}')
+              f'\nPacker takes Bin off of belt {belt.getBeltNo()}')
         yield self.clock.timeout(1)
 
     def packerPutOnBelt(self, belt):
         print(f'\nTick: {self.clock.now}'
-              f'\nPacker puts Package onto belt {belt.id}')
+              f'\nPacker puts Package onto belt {belt.getBeltNo()}')
         yield self.clock.timeout(1)
 
     def createPackage(self, package):
@@ -144,6 +149,7 @@ class Display_Picker:
                                            ((self.y2 - self.y1) / 2 + self.y1), text=name)
         self.canvas.update()
 
+
 class Display_Bin:
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
@@ -169,7 +175,8 @@ class Display_Bin:
             next_point = Point(self.point.x, self.point.y - 1)
             self.point = next_point
 
-        self.canvas.update
+        self.canvas.update()
+
 
 class Display_Packer:
     def __init__(self, canvas, point, unit_size, name):
@@ -215,6 +222,7 @@ class Display_Package:
 
         self.canvas.update()
 
+
 class Display_Dock:
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
@@ -227,6 +235,7 @@ class Display_Dock:
         self.robot_id = canvas.create_text(((self.x2 - self.x1) / 2 + self.x1),
                                            ((self.y2 - self.y1) / 2 + self.y1), text=name)
         self.canvas.update()
+
 
 class Display_Charger:
     def __init__(self, canvas, point, unit_size, name):
@@ -244,6 +253,7 @@ class Display_Charger:
         self.charger_id = canvas.create_text(((self.x2 - self.x1) / 2 + self.x1),
                                            ((self.y2 - self.y1) / 2 + self.y1), text=name)
         self.canvas.update()
+
 
 class Display_Robot:
     def __init__(self, canvas, point, unit_size,  name):
@@ -423,6 +433,8 @@ if show_animation:
 # Animation Methods
 
 # Create the Grid layout for our display
+
+
 def checkered(canvas, line_distance):
     # Vertical lines at an interval of "line_distance" pixel
     for x in range(line_distance, GRID_WIDTH, line_distance):
@@ -434,18 +446,18 @@ def checkered(canvas, line_distance):
 
 
 def getDisplayRobot(robot_object):
-    #display_bot = None
+    display_bot = None
     for bot in ROBOT_LIST:
-        if bot.name == robot_object.robotName:
+        if bot.name == robot_object.getName():
             display_bot = bot
 
     return display_bot
 
 
 def getDisplayShelf(shelf_object):
-    #display_shelf = None
+    display_shelf = None
     for shelf in SHELF_LIST:
-        if shelf.number == shelf_object.shelfNumber:
+        if shelf.number == shelf_object.getShelfNo():
             display_shelf = shelf
 
     return display_shelf
@@ -554,19 +566,18 @@ if show_animation:
                   SHELF_16, SHELF_17, SHELF_18, SHELF_19, SHELF_20]
 
 
-
 def simulation(env):
     warehouse = Warehouse(env)
     floor = warehouse.floor
     inventory = warehouse.inventory
     robot_scheduler = warehouse.robot_scheduler
     order_control = warehouse.order_control
-    order_queue = order_control.allOrders
+    order_queue = order_control.all_orders
 
     picker = floor.getPicker()
     packer = floor.getPacker()
-    belt_area = floor.beltAreas[0]
-    dock_area = floor.shippingdock
+    belt_area = floor.belt_areas[0]
+    dock_area = floor.shipping_dock
 
     print('Warehouse is created')
 
@@ -589,7 +600,7 @@ def simulation(env):
             yield env.process(warehouse.orderStarted(order))
 
             # Beginning of Order fulfillment
-            for item in order.orderitems:
+            for item in order.order_items:
 
                 yield env.process(warehouse.startItem(item))
 
@@ -612,8 +623,6 @@ def simulation(env):
 
                     # Choose display Robot
                     DISPLAY_ROBOT = getDisplayRobot(robot)
-
-                    robot.status = 1
 
                     # Calculate the path to Shelf
                     robot_scheduler.robotPath(robot, shelf_location)
@@ -638,11 +647,9 @@ def simulation(env):
                     robot_scheduler.robotPath(robot, picker_location)
                     path = robot.destination
                     path_length = len(robot.destination)
-                    robot.status = 2
                     yield env.process(warehouse.robotPathRequest(robot))
 
                     # Move Robot to Picker location
-                    robot.status = 3
                     for num in range(0, path_length):
                         DISPLAY_ROBOT.move_robot(path[0])
                         DISPLAY_SHELF.move_shelf(path[0])
@@ -662,11 +669,9 @@ def simulation(env):
                     robot_scheduler.robotPath(robot, home_location)
                     path = robot.destination
                     path_length = len(robot.destination)
-                    robot.status = 4
                     yield env.process(warehouse.robotPathRequest(robot))
 
                     # Move Robot to Shelf home location
-                    robot.status = 5
                     for num in range(0, path_length):
                         DISPLAY_ROBOT.move_robot(path[0])
                         DISPLAY_SHELF.move_shelf(path[0])
@@ -680,11 +685,10 @@ def simulation(env):
 
                     # Calculate path back to charger
                     # Might need a chargerArea so that we can check which are open
-                    charger_location = floor.getChargerLocation()
+                    charger_location = floor.getChargerLocation(robot)
                     robot_scheduler.robotPath(robot, charger_location)
                     path = robot.destination
                     path_length = len(robot.destination)
-                    robot_status = 6
                     yield env.process(warehouse.robotPathRequest(robot))
 
                     # Move Robot to charger location
@@ -695,7 +699,7 @@ def simulation(env):
                     yield env.process(warehouse.robotAtLocation(robot, "Charger"))
 
                     # Robot is now charging
-                    robot_status = 7
+                    # robot.setCharging()
 
                 # Item is not in stock
                 else:
@@ -714,7 +718,7 @@ def simulation(env):
                 # Tell Picker to put Bin on Belt
                 picker.putOnBelt(order_bin, first_belt)
                 # Create Animation Bin
-                ORDER_BIN = grabBin(picker.beltlocation)
+                ORDER_BIN = grabBin(picker.getPickerBeltLocation())
                 yield env.process(warehouse.pickerPutOnBelt(first_belt))
 
                 # Distance from Picker to Packer
@@ -739,14 +743,14 @@ def simulation(env):
                 # Tell Packer to create a Package from the contents of Bin
                 order_package = packer.createPackage(order_bin, order.getShipAddr())
                 # Create Animation Package
-                PACKAGE = createPackage(packer.beltlocation)
+                PACKAGE = createPackage(packer.getPackerBeltLocation())
                 yield env.process(warehouse.createPackage(order_package))
 
                 # Put new Package onto Belt
                 packer.putOnBelt(order_package, first_belt)
                 yield env.process(warehouse.packerPutOnBelt(first_belt))
 
-                packer_to_dock = packer.beltlocation.y - belt_area.endpoint.y - 1
+                packer_to_dock = packer.getPackerBeltLocation().y - belt_area.end_point.y - 1
 
                 # Moving Belt with Package on it to the Shipping Dock
                 for num in range(0, packer_to_dock):
@@ -771,9 +775,9 @@ def simulation(env):
 
 
 def run():
-    env = simpy.RealtimeEnvironment(factor=.25)
+    env = simpy.RealtimeEnvironment(factor=.1)
     env.process(simulation(env))
-    env.run(until=119)
+    env.run(until=100)
 
 
 run()

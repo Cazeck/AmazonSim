@@ -1,7 +1,3 @@
-# Cell is an extension (subclass) of Point which also has
-# possible content (a Robot or Shelf). Floor should be "in charge"
-# of having all the Cell objects, and Robot, Orders, Inventory,
-# maybe even Belt should update Cell objects using methods of Floor
 
 from Point import Point
 from Shelf import Shelf
@@ -12,6 +8,7 @@ from Picker import Picker
 from Charger import Charger
 from DockArea import DockArea
 from Bin import Bin
+
 
 class Cell(Point):
     """
@@ -57,6 +54,7 @@ class Cell(Point):
             List of objects within Cell
         """
         return self.content
+
         # Something was scuffed here earlier, keeping this for the time being
         #if len(self.content) == 1:
         #    return self.content

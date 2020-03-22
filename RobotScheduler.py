@@ -1,229 +1,192 @@
+
+import random
 from Point import Point
 from Robot import Robot
-from Cell import Cell
-from Floor import Floor
+
 
 class RobotScheduler:
+    """
+    RobotScheduler is responsible to keeping track of where all Robots are at all times and providing the Robots
+    instruction on where they need to go and the path they should take to get there
+
+    Is also responsible to creating each of the Robots in the warehouse
+
+    Attributes:
+        clock: Reference to SimPy simulation environment
+        floor: Reference to the Floor component
+        robot_list: A list of all Robots objects that are within the warehouse
+        available_robots: A list of Robot objects which contain Robots that are not currently doing something
+    """
 
     def __init__(self, env, floor):
+        """
+        Inits Inventory with the simulation environment and a reference to warehouse Floor layout
+
+        During initialization, RobotScheduler creates all of Robots used in the simulation and distributes
+        places each one on a charger until they are needed
+
+        Args:
+            env: SimPy simulation environment
+            floor: Floor object so we can communicate with this subset
+        """
         self.clock = env
         self.floor = floor
-        # for 20 x 20
-        # self.robotList = [Robot('A', Point(5, 0)), Robot('B', Point(6, 0)), Robot('C', Point(7, 0)), Robot('D', Point(8, 0)), Robot('E', Point(9, 0))]
-        self.robotList = [Robot('A', Point(2, 9)), Robot('B', Point(3, 9)), Robot('C', Point(4, 9)), Robot('D', Point(5, 9)), Robot('E', Point(6, 9))]
-        self.availableRobots = []
+        self.robot_list = [Robot('A', Point(2, 9)), Robot('B', Point(3, 9)), Robot('C', Point(4, 9)),
+                           Robot('D', Point(5, 9)), Robot('E', Point(6, 9))]
+        self.available_robots = []
 
         self.populate()
 
-    # Returns total number of robots in RobotScheduler
     def numberOfRobots(self):
-        return len(self.robotList)
+        """
+        Count the total number of Robots the RobotScheduler has control over
 
-    # Add robot to the scheduler
+        Returns:
+            Integer representing the number of Robots within robot_list
+        """
+        return len(self.robot_list)
+
     def addRobot(self, robot):
-        self.robotList.append(robot)
+        """
+        Adds a Robot object to RobotScheduler
 
-    # Finds a Robot with specified name
+        Args:
+            robot: Robot object to be added
+        """
+        self.robot_list.append(robot)
+
     def findRobot(self, name):
-        for i in self.robotList:
-            if name == i.robotName:
+        """
+        Find a Robot with a specified name in RobotScheduler
+
+        Args:
+            name: String representing a Robot's name
+
+        Raises:
+            Exception: Robot with matching name cannot be found
+        """
+        for i in self.robot_list:
+            if name == i.robot_name:
                 return i
-        return None  # item not found with matching name
 
-    # Find all robots that are currently idle
-    def idleRobots(self):
-        #idle_bots = []
-        for i in self.robotList:
-            if i.status == 0:
-                #idle_bots.append(i)
-                self.availableRobots.append(i)
+        raise Exception(f'Robot with name {name} cannot be found')
+
+    def chargingRobots(self):
+        """
+        Find all Robots that are currently doing nothing (Charging)
+
+        Returns:
+            self.available_robots: List of Robot objects that are not busy
+        """
+        for i in self.robot_list:
+            if i.charging == True:
+                self.available_robots.append(i)
             else:
-                continue  # this robot is busy, check another
+                # This robot is busy, check another
+                continue
 
-        #self.availableRobots = idle_bots
-        return self.availableRobots
+        return self.available_robots
 
-    # Returns first available robot in list
     def findAvailableRobot(self):
-        return self.availableRobots[0]
+        """
+        Finds a random Robot that is currently charging for a task
 
-    # sendRobot?  which finds an available robot and then sends it to that location with pathing coordinates
+        Returns:
+            robot: A Robot object that is not busy
+        """
+        robot = random.choice(self.available_robots)
+        return robot
 
     # Will take the robots from robotList and distribute them into Cells on Floor
     def populate(self):
-
+        """
+        Takes every Robot from robot_list and distributes them into Cells on Floor
+        """
         # For each location on floor
-        for y in range(0, self.floor.warehousedepth):
-            for x in range(0, self.floor.warehousewidth):
+        for y in range(0, self.floor.warehouse_depth):
+            for x in range(0, self.floor.warehouse_width):
                 point = Point(x, y)
-                for robot in self.robotList:
+                for robot in self.robot_list:
                     if robot.location.x == point.x and robot.location.y == point.y:
-                        cellAtLocation = self.floor.getCell(point)
-                        cellAtLocation.setContents(robot)
-                        robot.setCell(cellAtLocation)
+                        cell_at_location = self.floor.getCell(point)
+                        cell_at_location.setContents(robot)
+                        robot.setCell(cell_at_location)
 
-        # Check if new robots are idle. If so, add then to idleList
-        self.idleRobots()
+        # Check if new robots are charging
+        self.chargingRobots()
 
-    # CAN BE REMOVED FROM HERE WHEN IT IS TESTED TO WORK WITHIN FLOOR
-
-    # Maps a path from the robots current location to the endPoing
-    # Will later make sure it doesn't run into anything
-    # returns a list of points (the path the robot will take in order)
-    def mapDestination(self, robot, endpoint):
-        pathX = []
-        pathY = []
-
-        # We will do move Left/Right first (X)
-        # Then move Up/Down after (Y)
-
-        # Calculate whether or not we need to Left or Right
-        distanceLR = robot.location.x - endpoint.x
-
-        if distanceLR < 0:
-            #print("We need to move " + str(abs(distanceLR)) + " units Right")
-
-            for i in range(abs(distanceLR)):
-                nextX = robot.location.x + (i + 1)
-                currentY = robot.location.y
-                # Only moving L/R so Y stays the same
-                pathX.append(Point(nextX, currentY))
-                #print(pathX)
-
-        if distanceLR > 0:
-            #print("We need to move " + str(abs(distanceLR)) + " units Left")
-
-            for i in range(abs(distanceLR)):
-                nextX = robot.location.x - (i + 1)
-                currentY = robot.location.y
-                # Only moving L/R so Y stays the same
-                pathX.append(Point(nextX, currentY))
-                #print(pathX)
-
-        # Calculate whether or not we need to Up or Down
-        distanceUD = robot.location.y - endpoint.y
-
-        if distanceUD < 0:
-            #print("We need to move " + str(abs(distanceUD)) + " units Up")
-
-            for i in range(abs(distanceUD)):
-                # Use endpoint.x here because we already have pathed out final x location
-                currentX = endpoint.x
-                nextY = robot.location.y + (i + 1)
-                # Only moving U/D so X stays the same
-                pathY.append(Point(currentX, nextY))
-                #print(pathY)
-
-        if distanceUD > 0:
-            #print("We need to move " + str(abs(distanceUD)) + " units Down")
-
-            for i in range(abs(distanceUD)):
-                # Use endpoint.x here because we already have pathed out final x location
-                currentX = endpoint.x
-                nextY = robot.location.y - (i + 1)
-                # Only moving U/D so X stays the same
-                pathY.append(Point(currentX, nextY))
-                #print(pathY)
-
-        # Combine the two Paths, X steps first then Y steps
-        fullPath = pathX + pathY
-
-        return fullPath
-
-
-    # Asks Floor to calculate path from robot -> destination
     def robotPath(self, robot, destination):
-        robotlocation = robot.getLocation()
+        """
+        Asks Floor component to calculate the path from a Robot's current location to a desired destination.
+
+        After the path is calculated, give the directions to the specified Robot
+
+        Args:
+            robot: Robot object we are calculating the path for
+            destination: Point object that we want to send the Robot to
+        """
+        robot_location = robot.getLocation()
 
         # Get Path by Calling Floor's GetPath
-        path = self.floor.getPath(robotlocation, destination)
-        pathlength = len(path)
+        path = self.floor.getPath(robot_location, destination)
+        path_length = len(path)
 
         robot.setDestination(path)
 
-        # Moving the Robot to location
-        # Running moveByOne multiple times  to emulate ticks for time being
-        #for num in range(0, pathlength):
-        #    self.moveByOne(robot)
 
-    # Make a Robot move to its set destination
     def moveRobotToDest(self, robot):
+        """
+        RobotScheduler tells a specific Robot to move to its destination step-by-step
+
+        For each step in Robot's path, call moveByOne. This is helpful for our event-based simulation
+
+        Args:
+            robot: Robot object we are moving around the warehouse
+        """
         path_length = len(robot.getDestination())
         for num in range(0, path_length):
             self.moveByOne(robot)
 
-    # New Version of Robot's
     def moveByOne(self, robot):
+        """
+        Move a specific Robot and its contents one unit forward following the Robot's path
 
+        Args:
+            robot: Robot object we are moving around the warehouse
+        """
         # If robot is holding a Shelf
-        if robot.holdingShelf is not None and robot.getDestination() != []:
+        if robot.getHoldingShelf() is not None and robot.getDestination() != []:
+            current_cell = robot.getCell()
 
-            currentcell = robot.getCell()
-            nextcell = self.floor.getCell(robot.getDestination()[0])
-            shelfheld = robot.getHoldingShelf()
-
-            #print(f'Current Cell is: {currentcell}')
-            #print(f'Next Cell is: {nextcell}')
+            # Next step in Robot's path
+            next_cell = self.floor.getCell(robot.getDestination()[0])
+            shelf_held = robot.getHoldingShelf()
 
             # Adding Robot to next Cell
-            nextcell.setContents(robot)
-            robot.setCell(nextcell)
+            next_cell.setContents(robot)
+            robot.setCell(next_cell)
 
             # Adding Shelf to next Cell
-            nextcell.setContents(shelfheld)
+            next_cell.setContents(shelf_held)
 
             # Removing Robot from current Cell
-            currentcell.removeContent(robot)
-            currentcell.removeContent(shelfheld)
+            current_cell.removeContent(robot)
+            current_cell.removeContent(shelf_held)
 
             # Remove first Point from destination
             del robot.destination[0]
 
         # If robot is moving by itself
         else:
-
-            currentcell = robot.getCell()
-            nextcell = self.floor.getCell(robot.getDestination()[0])
-            #print(f'Current Cell is: {currentcell}')
-            #print(f'Next Cell is: {nextcell}')
+            current_cell = robot.getCell()
+            next_cell = self.floor.getCell(robot.getDestination()[0])
 
             # Adding Robot to next Cell
-            nextcell.setContents(robot)
-            robot.setCell(nextcell)
+            next_cell.setContents(robot)
+            robot.setCell(next_cell)
 
             # Removing Robot from current Cell
-            currentcell.removeContent(robot)
+            current_cell.removeContent(robot)
 
             # Remove first Point from destination
             del robot.destination[0]
-
-
-#env = 'meme'
-#floor = Floor(env)
-
-#rsched = RobotScheduler(env, floor)
-
-#floor.printMap()
-
-#robot1 = rsched.robotList[0]
-#print('\n', robot1)
-
-#shelf1 = floor.getCell(Point(10,10)).getContents()[0]
-#print(shelf1)
-#robot1.setDestination([Point(5, 1), Point(5, 2), Point(5, 3)])
-
-#rsched.robotToDestination(robot1, Point(10,10))
-
-#floor.printMap()
-
-#robot1.pickUpShelf(shelf1)
-
-#print(robot1)
-
-#rsched.robotToDestination(robot1, Point(2,5))
-
-
-#floor.printMap()
-
-#print(floor.getCell(Point(2,5)).content)
-
