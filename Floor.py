@@ -1,3 +1,4 @@
+
 from Point import Point
 from Cell import Cell
 from ShelfArea import ShelfArea
@@ -21,55 +22,30 @@ class Floor:
     Class Variables:
         warehouse_width: Integer representing the width of the warehouse
         warehouse_depth: Integer representing the depth of the warehouse
-        picker_location: Point object that will be the location that Picker object will be placed at
-        packer_location: Point object that will be the location that Packer object will be placed at
-        shipping_dock: DockArea object that will be in the upper-left corner of the warehouse
-        shipping_dock_corner: Point object that is within shipping_dock that is next to the Belt
-        chargers: List of Charger objects within the warehouse
-        robots: List of Robot objects within the warehouse
 
     Attributes:
         clock: Reference to SimPy simulation environment for deterministic randomness
         random_seed: Seed for random generation
         all_points: A dictionary of {string: Cell} for all points on the floor
-        shelf_areas: A list of ShelfArea objects
-        belt_areas: A list of BeltArea objects
         picker: The Picker object within the warehouse
         packer: The Packer object within the warehouse
-
-    """
-    """         20 x 20
-    warehousewidth = 20
-    warehousedepth = 20
-
-    pickerlocation = Point(1, 5)
-    packerlocation = Point(1, 10)
-    shippingdock = DockArea([Point(0, 18), Point(1, 18),Point(0, 19), Point(1, 19)])
-    shippingdockcorner = Point(0, 18)
-    chargers = [Charger(Point(5, 0)), Charger(Point(6, 0)), Charger(Point(7, 0)), Charger(Point(8, 0)), Charger(Point(9, 0))]
-    robots = [Robot('A', Point(5, 0)), Robot('B', Point(6, 0)), Robot('C', Point(7, 0)), Robot('D', Point(8, 0)), Robot('E', Point(9, 0))]
+        chargers: List of Charger objects within the warehouse
+        robots: List of Robot objects within the warehouse
+        shipping_dock: DockArea object that will be in the upper-left corner of the warehouse
+        shipping_dock_corner: Point object that is within shipping_dock that is next to the Belt (bottom-right)
+        shelf_areas: A list of ShelfArea objects
+        belt_areas: A list of BeltArea objects
     """
     # 10 x 10
     warehouse_width = 10
     warehouse_depth = 10
 
-    picker_location = Point(1, 7)
-    packer_location = Point(1, 4)
-    shipping_dock = DockArea([Point(0, 0), Point(1, 0), Point(0, 1), Point(1, 1)])
-    shipping_dock_corner = Point(0, 1)
-    chargers = [Charger(Point(2, 9)), Charger(Point(3, 9)), Charger(Point(4, 9)), Charger(Point(5, 9)),
-                Charger(Point(6, 9))]
-    # robots = [Robot('A', Point(2, 9)), Robot('B', Point(3, 9)), Robot('C', Point(4, 9)), Robot('D', Point(5, 9)),
-    #          Robot('E', Point(6, 9))]
-
     def __init__(self, env):
         """
         Inits Floor with the simulation environment
 
-        During initialization, Floor creates all aspects of the warehouse requiring the use of Floor. Floor
-        creates each Cell that will be within the warehouse and populates them by creating necessary objects.
-
-        Creates the Picker, Packer, and Charger objects and populates Shelf Areas and Belt Areas with their objects
+        Floor receives values for all of it's attributes after calling it's own buildFloor method
+        which creates and populates every Cell on the Floor
 
         Args:
             env: SimPy simulation environment
@@ -77,56 +53,104 @@ class Floor:
         self.clock = env
         self.random_seed = 1
         self.all_points = {}
-        self.shelf_areas = []
-        self.belt_areas = []
-        self.picker = Picker(self.picker_location)
-        self.packer = Packer(self.packer_location)
-        self.populateShelfArea()
-        self.populateBeltArea()
+        self.picker = None
+        self.packer = None
+        self.chargers = None
+        self.robots = None
+        self.shipping_dock = None
+        self.shipping_dock_corner = None
+        self.shelf_areas = None
+        self.belt_areas = None
 
-        # For each tile in width x depth areas
+        self.buildFloor()
+
+    def buildFloor(self):
+        """
+        Creates a Cell for each location on the floor and creates objects that will initially start
+        on the Floor. Initial Point locations for the warehouse Floor are set here.
+
+        Goes through every Point location within Floor and creates a new Cell for it. If there is
+        an object that has a matching Point location as the new Cell, that object is added to the
+        Cell as well
+
+        Creates Picker, Packer, Robots, Chargers, as well as the DockArea, BeltArea, and ShelveAreas
+
+        Current values are for a 10x10 floor layout
+
+        Called during initialization
+        """
+        # Set Locations for objects and create instances
+        picker_location = Point(1, 7)
+        picker = Picker(picker_location)
+
+        packer_location = Point(1, 4)
+        packer = Packer(packer_location)
+
+        shipping_dock = DockArea([Point(0, 0), Point(1, 0), Point(0, 1), Point(1, 1)])
+        shipping_dock_corner = Point(0, 1)
+
+        chargers = [Charger(Point(2, 9)), Charger(Point(3, 9)), Charger(Point(4, 9)), Charger(Point(5, 9)),
+                    Charger(Point(6, 9))]
+
+        robots = [Robot('A', Point(2, 9)), Robot('B', Point(3, 9)), Robot('C', Point(4, 9)), Robot('D', Point(5, 9)),
+                  Robot('E', Point(6, 9))]
+
+        shelf_areas = [ShelfArea(Point(5, 1), 5), ShelfArea(Point(5, 5), 5)]
+
+        belt_length = picker_location.y - shipping_dock_corner.y
+        belt_areas = [BeltArea(self, Point(picker_location.x - 1, picker_location.y), belt_length)]
+
+        # Once everything has been created, give them to Floor
+        self.picker = picker
+        self.packer = packer
+        self.shipping_dock = shipping_dock
+        self.shipping_dock_corner = shipping_dock_corner
+        self.chargers = chargers
+        self.robots = robots
+        self.shelf_areas = shelf_areas
+        self.belt_areas = belt_areas
+
+        # For each Point location in the warehouse, create a new Cell and if there is an object
+        # that has a matching Point location, add that object to the Cell
         for x in range(0, self.warehouse_width):
             for y in range(0, self.warehouse_depth):
                 point = Point(x, y)
-
-                # check if this point already has a cell in a shelf area
-                # and if so, just use the existing cell
-                # will be the new cell created for this point
+                # Create Cell for point location
                 cell = Cell(point)
 
-                # Create the ShelfAreas
+                # Check if Point location matches Picker location
+                if picker.getPickLocation().x == point.x and picker.getPickLocation().y == point.y:
+                    cell.setContents(self.picker)
+
+                # Check if Point location matched Packer location
+                if self.packer.getLocation().x == point.x and packer.getLocation().y == point.y:
+                    cell.setContents(self.packer)
+
+                # Check if Point location matched Dock Area location
+                for p in self.shipping_dock.points:
+                    if p.x == point.x and p.y == point.y:
+                        cell.setContents(self.shipping_dock)
+
+                # Check the Chargers to see if any match Point location
+                for charger in self.chargers:
+                    if charger.location.x == point.x and charger.location.y == point.y:
+                        cell.setContents(charger)
+
+                # Check the Robots to see if any match Point location
+                for robot in self.robots:
+                    if robot.location.x == point.x and robot.location.y == point.y:
+                        cell.setContents(robot)
+                        robot.setCell(cell)
+
+                # Check the Shelf Areas for Shelves that match Point location
+                # Cell are already created within Shelf Area so use those Cells if matching location
                 for s in self.shelf_areas:
                     if s.hasWithin(point):
                         cell = s.getCell(point)
                         assert cell is not None
 
-                # Create the Cell for Picker
-                if self.picker_location.x == point.x and self.picker_location.y == point.y:
-                    cell.setContents(self.picker)
-
-                # Create the Cell for Packer
-                if self.packer_location.x == point.x and self.packer_location.y == point.y:
-                    cell.setContents(self.packer)
-
-                # Create the Chargers
-                for charger in self.chargers:
-                    if charger.location.x == point.x and charger.location.y == point.y:
-                        cell.setContents(charger)
-
-                #for robot in self.robots:
-                #    if robot.location.x == point.x and robot.location.y == point.y:
-                #        #print("Charger")
-                #        cell.setContents(robot)
-                #        robot.setCell(cell)
-                #        #print(cell)
-                #        #print(cell.getContents())
-
-                # Create the Dock Area
-                for p in self.shipping_dock.points:
-                    if p.x == point.x and p.y == point.y:
-                        cell.setContents(self.shipping_dock)
-
-                # Creating BeltArea
+                # Check the Belt Areas for Belts that match Point location
+                # Cell are already created within Belt Area so use those Cells if matching location
                 for b in self.belt_areas:
                     if b.isWithin(point):
                         cell = b.getCell(point)
@@ -134,26 +158,6 @@ class Floor:
 
                 # Adds to the dictionary as {Point: Cell}
                 self.all_points.update({str(point): cell})
-
-    def populateShelfArea(self):
-        """
-        Creates two instances of Shelf Areas to place on the Floor
-
-        Current values are for a 10x10 layout
-        """
-        self.shelf_areas.append(ShelfArea(Point(5, 1), 5))
-        self.shelf_areas.append(ShelfArea(Point(5, 5), 5))
-
-    def populateBeltArea(self):
-        """
-        Creates an instance of Belt Area to place on the Floor
-
-        Current values are for a 10x10 layout
-        """
-        distance = self.picker_location.y - self.shipping_dock_corner.y
-
-        # Make the Belt Area one left of Picker, and all the way to Shipping Dock
-        self.belt_areas.append(BeltArea(self, Point(self.picker_location.x - 1, self.picker_location.y), distance))
 
     def getCell(self, point):
         """
@@ -214,7 +218,7 @@ class Floor:
         Returns:
             The Point location of the Picker
         """
-        return self.picker_location
+        return self.picker.getPickLocation()
 
     def getPacker(self):
         """
@@ -232,7 +236,7 @@ class Floor:
         Returns:
             The Point location of the Packer
         """
-        return self.packer_location
+        return self.packer.getLocation()
 
     def getShippingDock(self):
         """
@@ -255,19 +259,6 @@ class Floor:
         """
         charger_location = robot.getChargerLocation()
         return charger_location
-
-    # Is this needed?
-    #def getBeltArea(self):
-    #    """
-    #    Returns the home location of the Shelf object
-
-    #    Returns:
-    #        The Point object, home_location of the shelf object
-    #    """
-    #    belt_area = []
-    #    for i in range(self.picker_location.x, 0):
-    #        belt_area.add(Point(i, 0))
-    #    return belt_area
 
     def getNumShelfAreas(self):
         """

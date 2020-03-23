@@ -22,8 +22,8 @@ class RobotScheduler:
         """
         Inits Inventory with the simulation environment and a reference to warehouse Floor layout
 
-        During initialization, RobotScheduler creates all of Robots used in the simulation and distributes
-        places each one on a charger until they are needed
+        During initialization, RobotScheduler call populate() in order to receive all Robots that have been
+        placed on the floor
 
         Args:
             env: SimPy simulation environment
@@ -31,10 +31,8 @@ class RobotScheduler:
         """
         self.clock = env
         self.floor = floor
-        self.robot_list = [Robot('A', Point(2, 9)), Robot('B', Point(3, 9)), Robot('C', Point(4, 9)),
-                           Robot('D', Point(5, 9)), Robot('E', Point(6, 9))]
+        self.robot_list = []
         self.available_robots = []
-
         self.populate()
 
     def numberOfRobots(self):
@@ -78,11 +76,12 @@ class RobotScheduler:
         Returns:
             self.available_robots: List of Robot objects that are not busy
         """
-        for i in self.robot_list:
-            if i.charging == True:
-                self.available_robots.append(i)
+        for robot in self.robot_list:
+            if robot.charging == True:
+                self.available_robots.append(robot)
             else:
                 # This robot is busy, check another
+                print(f'robot {robot} is not charging')
                 continue
 
         return self.available_robots
@@ -97,20 +96,16 @@ class RobotScheduler:
         robot = random.choice(self.available_robots)
         return robot
 
-    # Will take the robots from robotList and distribute them into Cells on Floor
     def populate(self):
         """
-        Takes every Robot from robot_list and distributes them into Cells on Floor
+        Takes every Robots that is located on Floor and adds them to robot_list
+
+        After that it checks to see if they are all charging
         """
-        # For each location on floor
-        for y in range(0, self.floor.warehouse_depth):
-            for x in range(0, self.floor.warehouse_width):
-                point = Point(x, y)
-                for robot in self.robot_list:
-                    if robot.location.x == point.x and robot.location.y == point.y:
-                        cell_at_location = self.floor.getCell(point)
-                        cell_at_location.setContents(robot)
-                        robot.setCell(cell_at_location)
+        floor_robots = self.floor.robots
+
+        for robot in floor_robots:
+            self.addRobot(robot)
 
         # Check if new robots are charging
         self.chargingRobots()
