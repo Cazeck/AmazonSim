@@ -11,6 +11,7 @@ from Packer import Packer, Package
 from Charger import Charger
 from DockArea import DockArea
 from Bin import Bin
+import PathFinding
 
 
 class Floor:
@@ -285,12 +286,14 @@ class Floor:
         """
         Maps a path through the Floor from start_point to end_point without colliding into any other objects
 
+        Keeping this for the time being for display purposes for a later write-up of the project
+
         Args:
             start_point: Point object where the Robot is starting at
             end_point: Point object where the Robot will end up at
 
         Returns:
-            item: A list of Points representing the path the Robot will take (Steps are in order)
+            full_path: A list of Points representing the path the Robot will take (Steps are in order)
         """
         path_x = []
         path_y = []
@@ -342,6 +345,100 @@ class Floor:
         full_path = path_x + path_y
 
         return full_path
+
+    def getPath2(self, start_point, end_point):
+        """
+        Maps a path through the Floor from start_point to end_point
+
+        PathFinding uses an A* algorithm to map out an optimal path
+
+        First calls floorGrid to get a grid layout of the Floor for the path finding algorithm
+        Then calls aStar in pathFinding which maps out a path from start_point to end_point without
+        colliding with any other objects on the warehouse floor
+
+        Args:
+            start_point: Point object where the Robot is starting at
+            end_point: Point object where the Robot will end up at
+
+        Returns:
+            full_path: A list of Points representing the path the Robot will take (Steps are in order)
+        """
+        floor_grid = self.floorGrid(start_point, end_point)
+
+        full_path = PathFinding.aStar(floor_grid, start_point, end_point)
+
+        return full_path
+
+    def floorGrid(self, start, end):
+        """
+        Creates a matrix grid of the warehouse floor layout. If there is an object located there, there will be a 1
+        if there is no object, there will be a 0
+
+        The only exception are for the specified start point and end point, which will be switched to 0
+
+
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0]      A grid from (3, 9) to (1, 6) would look like this
+        [1, 1, 0, 0, 0, 1, E, 1, 1, 1]      except for the S representing start and the E representing
+        [1, 0, 0, 0, 0, 1, 1, 1, 1, 1]      end would be 0's
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        [1, 0, 0, 0, 0, 1, 1, 1, 1, 1]
+        [1, 0, 0, 0, 0, 1, 1, 1, 1, 1]
+        [1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 1, S, 1, 1, 1, 0, 0, 0]
+
+        Args
+            start: Point object where the path starts
+            end: Point object where the path ends
+
+        Returns
+            grid: A Matrix for the PathFinding Class
+        """
+        grid = []
+        row_contents = []
+
+        for i in range(0, self.warehouse_depth):
+            y_coord = i
+            for j in range(0, self.warehouse_width):
+                x_coord = j
+                cell_at_coord = self.all_points[f'Point x:{x_coord} y:{y_coord}']
+                obj_list = cell_at_coord.getContents()
+
+                # If Contents is empty, move to the next Cell
+                if len(obj_list) == 0:
+                    row_contents.append(0)
+                    continue
+
+                # If Cell contains an Object
+                if len(obj_list) == 1:
+                    # Either the start or end point, place a 0
+                    if cell_at_coord.cellLocation().x == start.x and cell_at_coord.cellLocation().y == start.y  \
+                            or cell_at_coord.cellLocation().x == end.x and cell_at_coord.cellLocation().y == end.y:
+                        row_contents.append(0)
+                        continue
+                    else:
+                        row_contents.append(1)
+
+                # If Cell contains two Objects
+                if len(obj_list) == 2:
+                    # Either the start or end point, place a 0
+                    if cell_at_coord.cellLocation().x == start.x and cell_at_coord.cellLocation().y == start.y  \
+                            or cell_at_coord.cellLocation().x == end.x and cell_at_coord.cellLocation().y == end.y:
+                        row_contents.append(0)
+                        continue
+                    else:
+                        row_contents.append(1)
+
+            grid.append(row_contents)
+            # Reset for next row
+            row_contents = []
+
+        # For testing as of now
+        # for row in grid:
+        #     print(row)
+
+        return grid
 
     def locateShelf(self, shelf_number):
         """
@@ -427,40 +524,40 @@ class Floor:
 
                     # [Charger, Robot]
                     if isinstance(obj_list[0], Charger) and isinstance(obj_list[1], Robot):
-                        rowContents.append(f'Char/Rob{obj_list[1].getName()}')
+                        row_contents.append(f'Char/Rob{obj_list[1].getName()}')
 
                     # [Robot, Charger]
                     if isinstance(obj_list[0], Robot) and isinstance(obj_list[1], Charger):
-                        rowContents.append(f'Char/Rob{obj_list[0].getName()}')
+                        row_contents.append(f'Char/Rob{obj_list[0].getName()}')
 
                     # [Shelf, Robot]
                     if isinstance(obj_list[0], Shelf) and isinstance(obj_list[1], Robot):
-                        rowContents.append(f'Sh{obj_list[0].getShelfNo()}/Rob{obj_list[1].getName()}')
+                        row_contents.append(f'Sh{obj_list[0].getShelfNo()}/Rob{obj_list[1].getName()}')
 
                     # [Robot, Shelf]
                     if isinstance(obj_list[0], Robot) and isinstance(obj_list[1], Shelf):
-                        rowContents.append(f'Sh{obj_list[1].getShelfNo()}/Rob{obj_list[0].getName()}')
+                        row_contents.append(f'Sh{obj_list[1].getShelfNo()}/Rob{obj_list[0].getName()}')
 
                     # [Belt, Bin]
                     if isinstance(obj_list[0], Belt) and isinstance(obj_list[1], Bin):
-                        rowContents.append(f'Bel{obj_list[0].getBeltNo()}/Bin{obj_list[1].binId}')
+                        row_contents.append(f'Bel{obj_list[0].getBeltNo()}/Bin{obj_list[1].binId}')
 
                     # [Bin, Belt]
                     if isinstance(obj_list[0], Bin) and isinstance(obj_list[1], Belt):
-                        rowContents.append(f'Bel{obj_list[1].getBeltNo()}/Bin{obj_list[0].binId}')
+                        row_contents.append(f'Bel{obj_list[1].getBeltNo()}/Bin{obj_list[0].binId}')
 
                     # [Belt, Package]
                     if isinstance(obj_list[0], Belt) and isinstance(obj_list[1], Package):
-                        rowContents.append(f'Bel{obj_list[0].getBeltNo()}/Package')
+                        row_contents.append(f'Bel{obj_list[0].getBeltNo()}/Package')
 
                     # [Package, Belt]
                     if isinstance(obj_list[0], Package) and isinstance(obj_list[1], Belt):
-                        rowContents.append(f'Bel{obj_list[1].getBeltNo()}/Package')
+                        row_contents.append(f'Bel{obj_list[1].getBeltNo()}/Package')
 
             line_print[f'Row {i}'] = row_contents
 
             # Reset for next row
-            rowContents = []
+            row_contents = []
 
         for row in line_print:
             print(row, line_print[row])

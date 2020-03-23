@@ -128,7 +128,6 @@ class RobotScheduler:
 
         robot.setDestination(path)
 
-
     def moveRobotToDest(self, robot):
         """
         RobotScheduler tells a specific Robot to move to its destination step-by-step
