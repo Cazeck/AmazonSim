@@ -123,9 +123,9 @@ class RobotScheduler:
         robot_location = robot.getLocation()
 
         # Get Path by Calling Floor's GetPath
-        path = self.floor.getPath(robot_location, destination)
+        print(f'\n\n\n CALCLATIONG PATH FROM {robot_location} TO {destination} \n\n\n')
+        path = self.floor.getPath2(robot_location, destination)
         path_length = len(path)
-
         robot.setDestination(path)
 
     def moveRobotToDest(self, robot):

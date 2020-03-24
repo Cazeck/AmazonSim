@@ -48,6 +48,7 @@ def aStar(grid, start, end):
         # Get the current node
         current_node = open_list[0]
         current_index = 0
+        print(f'current node is: {current_node.position}')
         for index, item in enumerate(open_list):
             if item.f < current_node.f:
                 current_node = item
@@ -69,7 +70,9 @@ def aStar(grid, start, end):
                 # path.append(current.position)  # original
                 path.append(new_point)
                 current = current.parent
-            return path[::-1]    # Return reversed path
+
+            reversed_path = path[::-1]
+            return reversed_path[1:]    # Return reversed path without first element (Robot current location)
 
         # Generate children
         children = []
@@ -83,6 +86,11 @@ def aStar(grid, start, end):
             # Make sure within range
             if node_position[0] > (len(grid) - 1) or node_position[0] < 0 \
                     or node_position[1] > (len(grid[len(grid)-1]) - 1) or node_position[1] < 0:
+                continue
+
+            # New added to stop loop
+            # Check if neighbor is already in the closed list
+            if Node(current_node, node_position) in closed_list:
                 continue
 
             # Make sure walkable terrain
@@ -131,24 +139,23 @@ def aStar(grid, start, end):
     #        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
     #        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-    #start = (0, 0)
-    #end = (7, 6)
+    #floor = [[1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    #         [1, 1, 0, 0, 0, 1, 1, 1, 1, 1],
+    #         [1, 0, 0, 0, 0, 1, 1, 1, 0, 1],
+    #         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #         [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    #         [1, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+    #         [1, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+    #         [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+    #         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #         [0, 0, 1, 1, 1, 0, 1, 0, 0, 0]]
 
-    #start = (9, 3)
-    #end = (1, 6)
+    #start = Point(5, 9) # (5, 9) robot
+    #end = Point(8, 2)   # (8, 2) shelf
 
-    #start = Point(3, 9)
-    #end = Point(7, 2)
-    #env = 'eme'
+    #path = aStar(floor, start, end)
 
-    #floor = Floor(env)
-
-    #floor_grid = floor.floorGrid(start, end)
-
-    #path = aStar(floor_grid, start, end)
-
-    #print('\n', path)
-
+    #print(path)
 
 
 #if __name__ == '__main__':

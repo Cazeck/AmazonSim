@@ -343,7 +343,6 @@ class Floor:
 
         # Combine the two Paths, X steps first then Y steps
         full_path = path_x + path_y
-
         return full_path
 
     def getPath2(self, start_point, end_point):
