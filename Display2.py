@@ -14,110 +14,134 @@ class Application(tk.Frame):
         # Create widgets
         self.create_widgets()
 
+
     def create_widgets(self):
-        # Create Grid
-        # FLOOR GRID
+        # Floor Grid Display
         self.floor_grid = FloorGrid(master=root, width=500, height=500)
         self.floor_grid.grid(row=0, column=0, rowspan=30, padx=10, pady=10)
 
-        # Tick Counter
-        self.tick_text = tk.StringVar()
-        self.tick_label = tk.Label(self.master, text='Current Tick:', font=('Courier', 10),
+        # Map Key
+        self.map_key_label = tk.Label(self.master, text='Map Key', font=('Courier', 12),
                                    bg='LightSkyBlue4', fg='white')
-        self.tick_label.grid(row=0, column=1, sticky=tk.W)
-        self.tick_value = tk.Label(self.master, textvariable=self.tick_text, font=('Courier', 10),
-                                   bg='LightSkyBlue4', fg='white')
-        self.tick_value.grid(row=0, column=2, sticky=tk.W)
-        self.tick_text.set('100')
+        self.map_key_label.grid(row=2, column=1)
+        self.map_key = tk.Canvas(self.master, width=320, height=120, bg='LightSkyBlue4')
+        self.map_key.grid(row=1, column=2, rowspan=3, columnspan=4, sticky=tk.W)
 
-        # Customer
-        self.customer_text = tk.StringVar()
-        self.customer_label = tk.Label(self.master, text='Customer', font=('Courier', 10),
-                                       bg='LightSkyBlue4', fg='white')
-        self.customer_label.grid(row=1, column=1, sticky=tk.W)
-        self.customer_entry = tk.Entry(self.master, textvariable=self.customer_text, width=40,
-                                       bg='LightSkyBlue4', fg='white')
-        self.customer_entry.grid(row=1, column=2, columnspan=3)
-
-        # Retailer
-        self.retailer_text = tk.StringVar()
-        self.retailer_label = tk.Label(self.master, text='Retailer', font=('Courier', 10),
-                                       bg='LightSkyBlue4', fg='white')
-        self.retailer_label.grid(row=2, column=1, sticky=tk.W)
-        self.retailer_entry = tk.Entry(self.master, textvariable=self.retailer_text, width=40,
-                                       bg='LightSkyBlue4', fg='white')
-        self.retailer_entry.grid(row=2, column=2, columnspan=3)
-
-        # Price
-        self.price_text = tk.StringVar()
-        self.price_label = tk.Label(self.master, text='Price', font=('Courier', 10),
+        # Shipping Address
+        self.address_text = tk.StringVar()
+        self.address_label = tk.Label(self.master, text='Shipping Address', font=('Courier', 12),
                                     bg='LightSkyBlue4', fg='white')
-        self.price_label.grid(row=3, column=1, sticky=tk.W)
-        self.price_entry = tk.Entry(self.master, textvariable=self.price_text, width=40,
+        self.address_label.grid(row=5, column=1, columnspan=2, sticky=tk.W)
+        self.address_entry = tk.Entry(self.master, textvariable=self.address_text, width=24, font=('Courier', 12),
                                     bg='LightSkyBlue4', fg='white')
-        self.price_entry.grid(row=3, column=2, columnspan=3)
+        self.address_entry.grid(row=5, column=3, columnspan=2)
 
-        # Current Order
-        self.order_label = tk.Label(self.master, text='Current Order', font=('Courier', 10), bg='LightSkyBlue4',
-                                       fg='white')
-        self.order_label.grid(row=4, column=1, sticky=tk.W)
-        self.order_list = tk.Listbox(self.master, height=4, width=28, border=0)
-        self.order_list.grid(row=5, column=1, columnspan=2,
-                                rowspan=6, sticky=tk.W)
-        # RIGHT
-        self.parts_label_m2 = tk.Label(self.master, text='Items Collected', font=('Courier', 10), bg='LightSkyBlue4',
-                                       fg='white')
-        self.parts_label_m2.grid(row=4, column=3, sticky=tk.W)
-        self.parts_list_m2 = tk.Listbox(self.master, height=4, width=30, border=0)
-        self.parts_list_m2.grid(row=5, column=3, columnspan=2,
-                                rowspan=6, sticky=tk.W)
+        # Order Status
+        self.status_text = tk.StringVar()
+        self.status_label = tk.Label(self.master, text='Order Status', font=('Courier', 12),
+                                    bg='LightSkyBlue4', fg='white')
+        self.status_label.grid(row=6, column=1, columnspan=2, sticky=tk.W)
+        self.status_entry = tk.Entry(self.master, textvariable=self.status_text, width=24, font=('Courier', 12),
+                                    bg='LightSkyBlue4', fg='white')
+        self.status_entry.grid(row=6, column=3, columnspan=2)
 
-        # Parts list 2 (listbox)
-        self.parts_label_2 = tk.Label(self.master, text='Two Sonk', font=('Courier', 10), bg='LightSkyBlue4',
-                                      fg='white')
-        self.parts_label_2.grid(row=12, column=1, sticky=tk.W)
-        self.parts_list_2 = tk.Listbox(self.master, height=4, width=60, border=0)
-        self.parts_list_2.grid(row=13, column=1, columnspan=4,
-                               rowspan=4, sticky=tk.W)
+        # Current Order Items (Left)
+        self.order_label = tk.Label(self.master, text='Current Order', font=('Courier', 12), bg='LightSkyBlue4',
+                                    fg='white')
+        self.order_label.grid(row=7, column=1, sticky=tk.W)
+        self.order_list = tk.Listbox(self.master, height=4, width=22, border=0, font=('Courier', 12))
+        self.order_list.grid(row=8, column=1, columnspan=2,
+                             rowspan=6, sticky=tk.W)
+        # Collected Items (Right)
+        self.collected_label = tk.Label(self.master, text='Items Collected', font=('Courier', 12), bg='LightSkyBlue4',
+                                        fg='white')
+        self.collected_label.grid(row=7, column=3)
+        self.collected_list = tk.Listbox(self.master, height=4, width=23, border=0, font=('Courier', 12))
+        self.collected_list.grid(row=8, column=3, columnspan=2, rowspan=6, sticky=tk.E)
 
-        # Parts list (listbox)
-        self.parts_label = tk.Label(self.master, text='One Sonk', font=('Courier', 10), bg='LightSkyBlue4', fg='white')
-        self.parts_label.grid(row=18, column=1, sticky=tk.W)
-        self.parts_list = tk.Text(self.master, height=8, width=55, border=0)
-        self.parts_list.grid(row=19, column=1, columnspan=4,
-                             rowspan=8, sticky=tk.W)
+        # Ticker (What is currently happening)
+        self.ticker_label = tk.Label(self.master, text='Current Action', font=('Courier', 12), bg='LightSkyBlue4', fg='white')
+        self.ticker_label.grid(row=16, column=1, sticky=tk.W)
+        self.ticker_text = tk.Text(self.master, height=8, width=46, border=0, font=('Courier', 12))
+        self.ticker_text.grid(row=17, column=1, columnspan=4, rowspan=8, sticky=tk.W)
 
-        # Create scrollbar
+        # Scrollbar for Ticker
         self.scrollbar = tk.Scrollbar(self.master)
-        self.scrollbar.grid(row=19, column=4, rowspan=8, columnspan=2, sticky=tk.N + tk.S + tk.W)
-        # Set scrollbar to parts
-        self.parts_list.configure(yscrollcommand=self.scrollbar.set)
-        self.scrollbar.configure(command=self.parts_list.yview)
+        self.scrollbar.grid(row=17, column=4, rowspan=8, sticky=tk.N + tk.S + tk.E)
+        # Set Scrollbar to Ticker
+        self.ticker_text.configure(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.configure(command=self.ticker_text.yview)
 
-        # BOTTM
-        self.meme_label = tk.Label(self.master, text='Babba Bouey', font=('Courier', 10),
+        # Bottom Bar (Name? Etc)
+        self.meme_label = tk.Label(self.master, text='Babba Bouey', font=('Courier', 12),
                                    bg='LightSkyBlue4', fg='white')
         self.meme_label.grid(row=28, column=1, sticky=tk.W)
-        self.meme_entry = tk.Entry(self.master, textvariable=self.meme_label, width=60, bg='LightSkyBlue4', fg='white')
+        self.meme_entry = tk.Entry(self.master, textvariable=self.meme_label, width=46, font=('Courier', 12),
+                                   bg='LightSkyBlue4', fg='white')
         self.meme_entry.grid(row=29, column=1, columnspan=4, sticky=tk.W)
+        self.meme_entry.insert(tk.END, " Casey Kolodziejczyk | Big Sonk | 2020")
+
+        # Drawing the Map Key (x1,y1,x2,y2)
+        self.robot_key = self.map_key.create_rectangle(10, 10, 30, 30, fill="orange")
+        self.robot_key_id = self.map_key.create_text(65, 20, text='Robot', font=('Courier', 12), fill='white')
+
+        self.shelf_key = self.map_key.create_rectangle(10, 40, 30, 60, fill="yellow")
+        self.shelf_key_id = self.map_key.create_text(65, 50, text='Shelf', font=('Courier', 12), fill='white')
+
+        self.belt_key = self.map_key.create_rectangle(10, 70, 30, 90, fill="light gray")
+        self.belt_key_id = self.map_key.create_text(60, 80, text='Belt', font=('Courier', 12), fill='white')
+
+        self.picker_key = self.map_key.create_rectangle(110, 10, 130, 30, fill="light blue")
+        self.picker_key_id = self.map_key.create_text(170, 20, text='Picker', font=('Courier', 12), fill='white')
+
+        self.packer_key = self.map_key.create_rectangle(110, 40, 130, 60, fill="light green")
+        self.packer_key_id = self.map_key.create_text(170, 50, text='Packer', font=('Courier', 12), fill='white')
+
+        self.dock_key = self.map_key.create_rectangle(110, 70, 130, 90, fill="slategray3")
+        self.dock_key_id = self.map_key.create_text(160, 80, text='Dock', font=('Courier', 12), fill='white')
+
+        self.charger_key = self.map_key.create_rectangle(210, 10, 230, 30, fill="pink")
+        self.charger_key_id = self.map_key.create_text(275, 20, text='Charger', font=('Courier', 12), fill='white')
+
+        self.bin_key = self.map_key.create_rectangle(210, 40, 230, 60, fill="gold")
+        self.bin_key_id = self.map_key.create_text(255, 50, text='Bin', font=('Courier', 12), fill='white')
+
+        self.package_key = self.map_key.create_rectangle(210, 70, 230, 90, fill="tan")
+        self.package_key_id = self.map_key.create_text(275, 80, text='Package', font=('Courier', 12), fill='white')
 
 
     def add_item(self, item_list):
         for i in item_list:
-            self.parts_list_m1.insert(tk.END, i)
+            self.collected_list.insert(tk.END, i)
 
     def new_order(self, order):
         # Clear order_list first
         self.order_list.delete(0, tk.END)
+        # Also clear collected_list
+        self.collected_list.delete(0, tk.END)
+        # Reset Order address and status
+        self.address_text.set('')
+        self.status_text.set('')
         #self.order_list
-        for i in order.getItems():
-            self.order_list.insert(tk.END, i)
+        for item in order.getItems():
+            self.order_list.insert(tk.END, item)
 
+        self.update_address(order.getShipAddr())
 
+    def update_collected(self, item):
+        self.collected_list.insert(tk.END, item)
 
-    def update_status(self, string):
+    def update_address(self, address):
+        self.address_text.set(address)
+
+    def update_status(self, status):
+        self.status_text.set(status)
+
+    def ticker_update(self, string):
         # These strings will be properly formatted within the Warehouse Simulation methods
-        self.parts_list.insert(tk.END, string)
+        self.ticker_text.insert(tk.END, string)
+        # Make Scrollbar go to Bottom so we can see most recent Status
+        self.ticker_text.yview(tk.END)
 
 
 class FloorGrid(tk.Canvas):

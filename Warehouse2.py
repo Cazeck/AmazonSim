@@ -53,9 +53,8 @@ class Warehouse(object):
 
         Display2.App.new_order(order)
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nStarting to process order {order.order_id}'
-              f'\n{order.order_items}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nStarting to process order {order.order_id}\n')
 
         yield self.clock.timeout(1)
 
@@ -63,7 +62,7 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nStarting to grab {item}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nStarting to grab {item}')
 
         yield self.clock.timeout(1)
@@ -72,8 +71,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nFinding shelf location for {item}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nFinding shelf location for {item}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nFinding shelf location for {item}\n')
 
         yield self.clock.timeout(1)
 
@@ -81,8 +80,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nFinding Shelf {shelf.getShelfNo()} location on Floor')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nFinding Shelf {shelf.getShelfNo()} location on Floor')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nFinding Shelf {shelf.getShelfNo()} location on Floor\n')
 
         yield self.clock.timeout(1)
 
@@ -92,9 +91,9 @@ class Warehouse(object):
               f'\nGenerating path for Robot {robot.getName()}'
               f'\nWill need to move {path_length} units')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nGenerating path for Robot {robot.getName()}'
-              f'\nWill need to move {path_length} units')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nGenerating path for Robot {robot.getName()} and'
+              f'\nSending Robot to destination\n')
 
         yield self.clock.timeout(1)
 
@@ -105,8 +104,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nRobot {robot.getName()} has arrived at {destination}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.getName()} has arrived at {destination}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nRobot {robot.getName()} has arrived at {destination}\n')
 
         yield self.clock.timeout(1)
 
@@ -114,8 +113,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nRobot {robot.getName()} has picked up Shelf {shelf.getShelfNo()}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.getName()} has picked up Shelf {shelf.getShelfNo()}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nRobot {robot.getName()} has picked up Shelf {shelf.getShelfNo()}\n')
 
         yield self.clock.timeout(1)
 
@@ -123,8 +122,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nRobot {robot.getName()} has put down Shelf {shelf.getShelfNo()}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nRobot {robot.getName()} has put down Shelf {shelf.getShelfNo()}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nRobot {robot.getName()} has put down Shelf {shelf.getShelfNo()}\n')
 
         yield self.clock.timeout(1)
 
@@ -132,8 +131,10 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nPicker takes {item} off of Shelf {shelf.getShelfNo()} and places it in bin')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nPicker takes {item} off of Shelf {shelf.getShelfNo()} and places it in bin')
+        Display2.App.update_collected(item)
+
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nPicker takes {item} off of Shelf {shelf.getShelfNo()} and places it in bin\n')
 
         yield self.clock.timeout(1)
 
@@ -141,8 +142,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nPicker puts Bin on Belt {belt.getBeltNo()}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nPicker puts Bin on Belt {belt.getBeltNo()}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nPicker puts Bin on Belt {belt.getBeltNo()}\n')
 
         yield self.clock.timeout(1)
 
@@ -155,8 +156,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nBelt {belt.getBeltNo()} with {item} is now at {destination}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nBelt {belt.getBeltNo()} with {item} is now at {destination}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nBelt {belt.getBeltNo()} with {item} is now at {destination}\n')
 
         yield self.clock.timeout(1)
 
@@ -164,8 +165,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nPacker takes Bin off of belt {belt.getBeltNo()}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nPacker takes Bin off of belt {belt.getBeltNo()}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nPacker takes Bin off of belt {belt.getBeltNo()}\n')
 
         yield self.clock.timeout(1)
 
@@ -173,8 +174,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nPacker puts Package onto belt {belt.getBeltNo()}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nPacker puts Package onto belt {belt.getBeltNo()}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nPacker puts Package onto belt {belt.getBeltNo()}\n')
 
         yield self.clock.timeout(1)
 
@@ -184,10 +185,10 @@ class Warehouse(object):
               f'\nPackage is to be shipped to: {package.destination}'
               f'\nContents: {package.contents}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nPacker creates Package from Bin contents'
               f'\nPackage is to be shipped to: {package.destination}'
-              f'\nContents: {package.contents}')
+              f'\nContents: {package.contents}\n')
 
         yield self.clock.timeout(1)
 
@@ -195,8 +196,8 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nPackage has been shipped to: {package.destination}')
 
-        Display2.App.update_status(f'\nTick: {self.clock.now}'
-              f'\nPackage has been shipped to: {package.destination}')
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nPackage has been shipped to: {package.destination}\n')
 
         yield self.clock.timeout(1)
 
@@ -458,8 +459,7 @@ def run():
     #env = simpy.Environment()
     env = simpy.RealtimeEnvironment(factor=.2)
     env.process(simulation(env))
-    #print(env.now)
-    env.run(until=1000)
+    env.run(until=30)
 
 
 # If we are not showing the Display during the simulation,
