@@ -53,19 +53,23 @@ class Warehouse(object):
 
         Display2.App.new_order(order)
 
+        Display2.App.update_status(f'Beginning Fulfillment')
+
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nStarting to process order {order.order_id}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(3)
 
     def startItem(self, item):
         print(f'\nTick: {self.clock.now}'
               f'\nStarting to grab {item}')
 
-        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
-              f'\nStarting to grab {item}')
+        Display2.App.update_status(f'Collecting Items')
 
-        yield self.clock.timeout(1)
+        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+              f'\nStarting to grab {item}\n')
+
+        yield self.clock.timeout(4)
 
     def itemLocationRequest(self, item):
         print(f'\nTick: {self.clock.now}'
@@ -74,7 +78,7 @@ class Warehouse(object):
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nFinding shelf location for {item}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def shelfLocationRequest(self, shelf):
         print(f'\nTick: {self.clock.now}'
@@ -83,7 +87,7 @@ class Warehouse(object):
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nFinding Shelf {shelf.getShelfNo()} location on Floor\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def robotPathRequest(self, robot):
         path_length = len(robot.destination)
@@ -95,17 +99,58 @@ class Warehouse(object):
               f'\nGenerating path for Robot {robot.getName()} and'
               f'\nSending Robot to destination\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def robotMovement(self, robot):
         yield self.clock.timeout(1)
+
+    #For Display text box Step is 1-4
+    def robotMovementUpdate(self, step, length, robot, shelf):
+        if step == 1:
+            Display2.App.ticker_update(
+                f'\n\n\nTick: {self.clock.now} - {self.clock.now + length}'
+                f'\nMoving Robot {robot.getName()}'
+                f'\nto Shelf {shelf.getShelfNo()}\n')
+
+        if step == 2:
+            Display2.App.ticker_update(
+                f'\n\n\nTick: {self.clock.now} - {self.clock.now + length}'
+                f'\nMoving Robot {robot.getName()}'
+                f'\nto Picker location\n')
+
+        if step == 3:
+            Display2.App.ticker_update(
+                f'\n\n\nTick: {self.clock.now} - {self.clock.now + length}'
+                f'\nReturning Shelf {shelf.getShelfNo()}'
+                f'\nTo its home location\n')
+
+        if step == 4:
+            Display2.App.ticker_update(
+                f'\n\n\nTick: {self.clock.now} - {self.clock.now + length}'
+                f'\nRobot {robot.getName()}'
+                f'\nReturning to charger\n')
+
+    # For Display Text box Step is 1-2
+    def BeltMovementUpdate(self, step, length):
+        if step == 1:
+            Display2.App.ticker_update(
+                f'\n\n\nTick: {self.clock.now} - {self.clock.now + length}'
+                f'\nMoving Belt with Bin'
+                f'\nTo Packer Location\n')
+
+        if step == 2:
+            Display2.App.ticker_update(
+                f'\n\n\nTick: {self.clock.now} - {self.clock.now + length}'
+                f'\nMoving Belt with Package'
+                f'\nTo Shipping Dock\n')
+
 
     def robotAtLocation(self, robot, destination):
         print(f'\nTick: {self.clock.now}'
               f'\nRobot {robot.getName()} has arrived at {destination}')
 
-        Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
-              f'\nRobot {robot.getName()} has arrived at {destination}\n')
+        #Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
+        #      f'\nRobot {robot.getName()} has arrived at {destination}\n')
 
         yield self.clock.timeout(1)
 
@@ -116,7 +161,7 @@ class Warehouse(object):
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nRobot {robot.getName()} has picked up Shelf {shelf.getShelfNo()}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def robotPutDownShelf(self, robot, shelf):
         print(f'\nTick: {self.clock.now}'
@@ -125,7 +170,7 @@ class Warehouse(object):
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nRobot {robot.getName()} has put down Shelf {shelf.getShelfNo()}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def pickerGrabsItem(self, item, shelf):
         print(f'\nTick: {self.clock.now}'
@@ -136,16 +181,18 @@ class Warehouse(object):
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nPicker takes {item} off of Shelf {shelf.getShelfNo()} and places it in bin\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def pickerPutOnBelt(self, belt):
         print(f'\nTick: {self.clock.now}'
               f'\nPicker puts Bin on Belt {belt.getBeltNo()}')
 
+        Display2.App.update_status(f'All Items Collected')
+
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nPicker puts Bin on Belt {belt.getBeltNo()}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def beltMovement(self):
         # print(f'\nTick: {self.clock.now}'
@@ -165,10 +212,12 @@ class Warehouse(object):
         print(f'\nTick: {self.clock.now}'
               f'\nPacker takes Bin off of belt {belt.getBeltNo()}')
 
+        Display2.App.update_status(f'Creating Package')
+
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nPacker takes Bin off of belt {belt.getBeltNo()}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def packerPutOnBelt(self, belt):
         print(f'\nTick: {self.clock.now}'
@@ -177,7 +226,7 @@ class Warehouse(object):
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nPacker puts Package onto belt {belt.getBeltNo()}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def createPackage(self, package):
         print(f'\nTick: {self.clock.now}'
@@ -185,12 +234,14 @@ class Warehouse(object):
               f'\nPackage is to be shipped to: {package.destination}'
               f'\nContents: {package.contents}')
 
+        Display2.App.update_status(f'Shipping Package')
+
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nPacker creates Package from Bin contents'
               f'\nPackage is to be shipped to: {package.destination}'
               f'\nContents: {package.contents}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
     def shipPackage(self, package):
         print(f'\nTick: {self.clock.now}'
@@ -199,7 +250,7 @@ class Warehouse(object):
         Display2.App.ticker_update(f'\n\n\n\nTick: {self.clock.now}'
               f'\nPackage has been shipped to: {package.destination}\n')
 
-        yield self.clock.timeout(1)
+        yield self.clock.timeout(4)
 
 
 def simulation(env):
@@ -215,13 +266,13 @@ def simulation(env):
     belt_area = floor.belt_areas[0]
     dock_area = floor.shipping_dock
 
+    display_grid = Display2.App.floor_grid
+
     print('Warehouse is created')
 
     while True:
         yield env.timeout(1)
-
         num_of_orders = len(order_queue)
-
         # If no Orders exist, make one
         if num_of_orders == 0:
             print('There are no Orders. Creating one now')
@@ -232,7 +283,7 @@ def simulation(env):
         if num_of_orders > 0:
             order = order_queue[0]
             order_bin = picker.grabBin()
-            order.updateStatus('Being processed')
+            # order.updateStatus('Starting fulfillment')
             yield env.process(warehouse.orderStarted(order))
 
             # Beginning of Order fulfillment
@@ -255,7 +306,8 @@ def simulation(env):
                     # If we are using Display
                     if show_animation:
                         # Choose display Shelf
-                        DISPLAY_SHELF = Display2.App.floor_grid.getDisplayShelf(shelf)
+                        DISPLAY_SHELF = display_grid.getDisplayShelf(shelf)
+                        #print("POPPOPOPOPOPO")
 
                     yield env.process(warehouse.shelfLocationRequest(shelf))
 
@@ -267,7 +319,7 @@ def simulation(env):
                         # Choose display Robot
                         #DISPLAY_ROBOT = getDisplayRobot(robot)
                         #DISPLAY_ROBOT = Display.getDisplayRobot(robot)
-                        DISPLAY_ROBOT = Display2.App.floor_grid.getDisplayRobot(robot)
+                        DISPLAY_ROBOT = display_grid.getDisplayRobot(robot)
 
                     # Calculate the path to Shelf
                     robot_scheduler.robotPath(robot, shelf_location)
@@ -276,6 +328,13 @@ def simulation(env):
                     yield env.process(warehouse.robotPathRequest(robot))
 
                     # Move Robot to Shelf location
+                    if show_animation:
+                        warehouse.robotMovementUpdate(1, path_length, robot, shelf)
+                        #Display2.App.ticker_update(
+                        #    f'\n\n\nTick: {warehouse.clock.now} - {warehouse.clock.now + path_length}'
+                        #    f'\nMoving Robot {robot.getName()}'
+                        #    f'\nto Shelf {shelf_number}\n')
+
                     for num in range(0, path_length):
                         # If we are using Display
                         if show_animation:
@@ -298,6 +357,13 @@ def simulation(env):
                     yield env.process(warehouse.robotPathRequest(robot))
 
                     # Move Robot to Picker location
+                    if show_animation:
+                        warehouse.robotMovementUpdate(2, path_length, robot, shelf)
+                        #Display2.App.ticker_update(
+                        #    f'\n\n\nTick: {warehouse.clock.now} - {warehouse.clock.now + path_length}'
+                        #    f'\nMoving Robot {robot.getName()}'
+                        #    f'\nto Picker location\n')
+
                     for num in range(0, path_length):
                         # If we are using Display
                         if show_animation:
@@ -323,6 +389,13 @@ def simulation(env):
                     yield env.process(warehouse.robotPathRequest(robot))
 
                     # Move Robot to Shelf home location
+                    if show_animation:
+                        warehouse.robotMovementUpdate(3, path_length, robot, shelf)
+                        #Display2.App.ticker_update(
+                        #    f'\n\n\nTick: {warehouse.clock.now} - {warehouse.clock.now + path_length}'
+                        #    f'\nReturning Shelf {shelf_number}'
+                        #    f'\nTo its home location\n')
+
                     for num in range(0, path_length):
                         # If we are using Display
                         if show_animation:
@@ -345,6 +418,13 @@ def simulation(env):
                     yield env.process(warehouse.robotPathRequest(robot))
 
                     # Move Robot to charger location
+                    if show_animation:
+                        warehouse.robotMovementUpdate(4, path_length, robot, shelf)
+                        #Display2.App.ticker_update(
+                        #    f'\n\n\nTick: {warehouse.clock.now} - {warehouse.clock.now + path_length}'
+                        #    f'\nRobot {robot.getName()}'
+                        #    f'\nReturning to charger\n')
+
                     for num in range(0, path_length):
                         # If we are using Display
                         if show_animation:
@@ -377,7 +457,7 @@ def simulation(env):
                 # If we are using Display
                 if show_animation:
                     # Create Animation Bin
-                    ORDER_BIN = Display2.App.floor_grid.grabBin(picker.getPickerBeltLocation())
+                    ORDER_BIN = display_grid.grabBin(picker.getPickerBeltLocation())
 
                 yield env.process(warehouse.pickerPutOnBelt(first_belt))
 
@@ -385,6 +465,13 @@ def simulation(env):
                 picker_to_packer = -(packer.location.y - picker.location.y)
 
                 # Moving Belt with Bin on it to the Packer
+                if show_animation:
+                    warehouse.BeltMovementUpdate(1, picker_to_packer)
+                    #Display2.App.ticker_update(
+                    #    f'\n\n\nTick: {warehouse.clock.now} - {warehouse.clock.now + picker_to_packer}'
+                    #    f'\nMoving Belt with Bin'
+                    #    f'\nTo Packer Location\n')
+
                 for num in range(0, picker_to_packer):
                     belt_area.moveBelt()
                     # If we are using Display
@@ -393,7 +480,7 @@ def simulation(env):
                         ORDER_BIN.move_bin(first_belt.getBeltCoord())
 
                         # Belt Animation
-                        Display2.App.floor_grid.rotateBelt()
+                        display_grid.rotateBelt()
 
                     yield env.process(warehouse.beltMovement())
                 yield env.process(warehouse.beltAtLocation(first_belt, "Bin", "Packer"))
@@ -404,7 +491,7 @@ def simulation(env):
                 # If we are using Display
                 if show_animation:
                     # Delete Bin
-                    Display2.App.floor_grid.deleteObject(ORDER_BIN)
+                    display_grid.deleteObject(ORDER_BIN)
 
                 yield env.process(warehouse.packerTakeOffBelt(first_belt))
 
@@ -414,7 +501,7 @@ def simulation(env):
                 # If we are using Display
                 if show_animation:
                     # Create Animation Package
-                    PACKAGE = Display2.App.floor_grid.createPackage(packer.getPackerBeltLocation())
+                    PACKAGE = display_grid.createPackage(packer.getPackerBeltLocation())
 
                 yield env.process(warehouse.createPackage(order_package))
 
@@ -425,6 +512,13 @@ def simulation(env):
                 packer_to_dock = packer.getPackerBeltLocation().y - belt_area.end_point.y - 1
 
                 # Moving Belt with Package on it to the Shipping Dock
+                if show_animation:
+                    warehouse.BeltMovementUpdate(1, packer_to_dock)
+                    #Display2.App.ticker_update(
+                    #    f'\n\n\nTick: {warehouse.clock.now} - {warehouse.clock.now + picker_to_packer}'
+                    #    f'\nMoving Belt with Package'
+                    #    f'\nTo Shipping Dock\n')
+
                 for num in range(0, packer_to_dock):
                     belt_area.moveBelt()
 
@@ -434,7 +528,7 @@ def simulation(env):
                         PACKAGE.move_package(first_belt.getBeltCoord())
 
                         # Belt Animation
-                        Display2.App.floor_grid.rotateBelt()
+                        display_grid.rotateBelt()
 
                     yield env.process(warehouse.beltMovement())
                 yield env.process(warehouse.beltAtLocation(first_belt, "Package",  "Dock Area"))
@@ -445,7 +539,7 @@ def simulation(env):
                 # If we are using Display
                 if show_animation:
                     # Delete Package
-                    Display2.App.floor_grid.deleteObject(PACKAGE)
+                    display_grid.deleteObject(PACKAGE)
 
                 yield env.process(warehouse.shipPackage(order_package))
 
@@ -457,9 +551,9 @@ def simulation(env):
 
 def run():
     #env = simpy.Environment()
-    env = simpy.RealtimeEnvironment(factor=.2)
+    env = simpy.RealtimeEnvironment(factor=.4)
     env.process(simulation(env))
-    env.run(until=30)
+    env.run(until=200)
 
 
 # If we are not showing the Display during the simulation,

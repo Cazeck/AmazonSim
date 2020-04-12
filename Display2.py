@@ -62,7 +62,7 @@ class Application(tk.Frame):
         # Ticker (What is currently happening)
         self.ticker_label = tk.Label(self.master, text='Current Action', font=('Courier', 12), bg='LightSkyBlue4', fg='white')
         self.ticker_label.grid(row=16, column=1, sticky=tk.W)
-        self.ticker_text = tk.Text(self.master, height=8, width=46, border=0, font=('Courier', 12))
+        self.ticker_text = tk.Text(self.master, height=7, width=46, border=0, font=('Courier', 12))
         self.ticker_text.grid(row=17, column=1, columnspan=4, rowspan=8, sticky=tk.W)
 
         # Scrollbar for Ticker
@@ -79,7 +79,7 @@ class Application(tk.Frame):
         self.meme_entry = tk.Entry(self.master, textvariable=self.meme_label, width=46, font=('Courier', 12),
                                    bg='LightSkyBlue4', fg='white')
         self.meme_entry.grid(row=29, column=1, columnspan=4, sticky=tk.W)
-        self.meme_entry.insert(tk.END, " Casey Kolodziejczyk | Big Sonk | 2020")
+        self.meme_entry.insert(tk.END, " Casey A Kolodziejczyk | Big Sonk | 2020")
 
         # Drawing the Map Key (x1,y1,x2,y2)
         self.robot_key = self.map_key.create_rectangle(10, 10, 30, 30, fill="orange")
@@ -113,6 +113,7 @@ class Application(tk.Frame):
     def add_item(self, item_list):
         for i in item_list:
             self.collected_list.insert(tk.END, i)
+            self.update()
 
     def new_order(self, order):
         # Clear order_list first
@@ -127,21 +128,26 @@ class Application(tk.Frame):
             self.order_list.insert(tk.END, item)
 
         self.update_address(order.getShipAddr())
+        self.update()
 
     def update_collected(self, item):
         self.collected_list.insert(tk.END, item)
+        self.update()
 
     def update_address(self, address):
         self.address_text.set(address)
+        self.update()
 
     def update_status(self, status):
         self.status_text.set(status)
+        self.update()
 
     def ticker_update(self, string):
         # These strings will be properly formatted within the Warehouse Simulation methods
         self.ticker_text.insert(tk.END, string)
         # Make Scrollbar go to Bottom so we can see most recent Status
         self.ticker_text.yview(tk.END)
+        self.update()
 
 
 class FloorGrid(tk.Canvas):
@@ -534,9 +540,9 @@ class Display_Shelf:
         self.canvas.update()
 
 if Warehouse2.show_animation:
-
-
     root = tk.Tk()
     App = Application(master=root)
     Warehouse2.run()
     App.mainloop()
+
+
