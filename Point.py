@@ -46,7 +46,7 @@ class Point:
             In the format: Point(x, y)
             Ex: Point(1, 2)
         """
-        return "Point('{}', '{}')".format(self.x, self.y)
+        return "Point({}, {})".format(self.x, self.y)
 
     def __str__(self):
         """

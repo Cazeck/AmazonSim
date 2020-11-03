@@ -32,7 +32,7 @@ class Robot:
         self.charger_location = starting_location
         self.location = starting_location
         self.cell = None
-        self.charging = True            # Is True because robots start on a charging station
+        self.charging = True
         self.holding_shelf = None
         self.destination = None
         Robot.num_of_robots += 1

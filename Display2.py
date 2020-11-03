@@ -73,13 +73,13 @@ class Application(tk.Frame):
         self.scrollbar.configure(command=self.ticker_text.yview)
 
         # Bottom Bar (Name? Etc)
-        self.meme_label = tk.Label(self.master, text='Babba Bouey', font=('Courier', 12),
+        self.created_label = tk.Label(self.master, text='Created By', font=('Courier', 12),
                                    bg='LightSkyBlue4', fg='white')
-        self.meme_label.grid(row=28, column=1, sticky=tk.W)
-        self.meme_entry = tk.Entry(self.master, textvariable=self.meme_label, width=46, font=('Courier', 12),
+        self.created_label.grid(row=28, column=1, sticky=tk.W)
+        self.created_entry = tk.Entry(self.master, textvariable=self.created_label, width=51, font=('Courier', 11),
                                    bg='LightSkyBlue4', fg='white')
-        self.meme_entry.grid(row=29, column=1, columnspan=4, sticky=tk.W)
-        self.meme_entry.insert(tk.END, " Casey A Kolodziejczyk | Big Sonk | 2020")
+        self.created_entry.grid(row=29, column=1, columnspan=4, sticky=tk.W)
+        self.created_entry.insert(tk.END, " Casey A Kolodziejczyk | Github.com/Cazeck | 2020")
 
         # Drawing the Map Key (x1,y1,x2,y2)
         self.robot_key = self.map_key.create_rectangle(10, 10, 30, 30, fill="orange")

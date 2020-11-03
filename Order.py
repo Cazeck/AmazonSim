@@ -133,7 +133,7 @@ class Order:
 
         Returns:
             In the format: Order(address, status, order_items, collected)
-            Ex: Shelf('101 North Ave', 'Grabbing Items', ['Handbag', 'T-Shirt'], [None])
+            Ex: Order('101 North Ave', 'Grabbing Items', ['Handbag', 'T-Shirt'], [None])
         """
         return "Order('{}', {}, {}, {})".format(self.ship_address, self.status, self.order_items, self.collected)
 

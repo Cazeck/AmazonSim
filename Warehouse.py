@@ -10,7 +10,7 @@ from RobotScheduler import RobotScheduler
 import Display
 
 # Whether or not we are going to show the Display during the Simulation
-show_animation = False
+show_animation = True
 
 
 class Warehouse(object):

@@ -3,8 +3,8 @@ import tkinter as tk
 import Warehouse
 from Point import Point
 
+#show_animation = True
 
-# ANIMATION CLASSES
 class Display_Picker:
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
@@ -143,8 +143,6 @@ class Display_Robot:
         self.canvas.update()
 
     def move_robot(self, point):
-        #print(f'Moving from {self.point.x, self.point.y} to: {point.x, point.y}')
-
         # Move Left
         if self.point.x > point.x and self.point.y == point.y:
             self.canvas.move(self.robot, (point.x - self.point.x) * self.unit_size, 0)
@@ -195,7 +193,6 @@ class Display_Belt:
     def move_belt(self, point):
         # Move Up
         if self.point.x == point.x and self.point.y > point.y:
-            #print("Gotta move up kurwa")
             self.canvas.move(self.belt, 0, (point.y - self.point.y) * self.unit_size)
             self.canvas.move(self.belt_id, 0, (point.y - self.point.y) * self.unit_size)
             next_point = Point(self.point.x, self.point.y - 1)
@@ -203,7 +200,6 @@ class Display_Belt:
 
         # Move Down to bottom location
         if self.point.x == point.x and self.point.y < point.y:
-            #print("Gotta move to the bottoem luls")
             self.canvas.move(self.belt, 0, (point.y - self.point.y) * self.unit_size)
             self.canvas.move(self.belt_id, 0, (point.y - self.point.y) * self.unit_size)
             next_point = Point(self.point.x, self.point.y + 5)
@@ -264,16 +260,24 @@ class Display_Shelf:
 
 # Setup Canvas
 if Warehouse.show_animation:
+#if show_animation:
     master = tk.Tk()
 
-    HEIGHT = 700
-    WIDTH = 600
+    HEIGHT = 800
+    WIDTH = 800
 
     # For Grid Canvas
-    GRID_WIDTH = 400
-    GRID_HEIGHT = 400
-    UNIT_SIZE = 40
+    GRID_WIDTH = 300
+    GRID_HEIGHT = 300
+    UNIT_SIZE = 30
 
+    grid = tk.Canvas(width=GRID_WIDTH, height=GRID_HEIGHT)
+
+    grid.grid(row=0, column=5, rowspan=20, columnspan=20)
+
+
+    """
+     ORIGINAL DISPLAY
     main_canvas = tk.Canvas(master, width=WIDTH, height=HEIGHT)
 
     lower_frame = tk.Frame(master, bg="#80c1ff", bd=5)
@@ -282,9 +286,10 @@ if Warehouse.show_animation:
     grid = tk.Canvas(lower_frame, width=GRID_WIDTH, height=GRID_HEIGHT)
 
     master.title("Amazon Warehouse")
+
     grid.pack()
     main_canvas.pack()
-
+    """
 # Animation Methods
 
 # Create the Grid layout for our display
@@ -351,6 +356,7 @@ def deleteObject(display_object):
 
 # Setup Warehouse
 if Warehouse.show_animation:
+#if show_animation:
     # Warehouse Grid
     checkered(grid, UNIT_SIZE)
 
@@ -420,7 +426,7 @@ if Warehouse.show_animation:
 # If we are going to show the display during the simulation,
 # we run the warehouse within the mainloop of the Display
 if Warehouse.show_animation:
+#if show_animation:
     Warehouse.run()
 
     master.mainloop()
-

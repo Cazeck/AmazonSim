@@ -1,9 +1,25 @@
 
 from Point import Point
 
+"""
+    Credit to Nicolas Swift for the algorithmn, found from his article on medium.com
+    Made some changes in order for it to produce the result I was looking for and tailor it to the warehouse floor
+    layout
+    
+"""
+
+
 class Node:
     """
-    A Node class for A* Pathfinding
+    This is the Node class we use during th aStar path finding algorithm
+
+    Attributes:
+        parent: Tuple representing the point location of the parent node (x, y)
+        position: Tuple representing the point location of the the node (x, y)
+        g: Integer value representing the distance between the current node and start node
+        h: Integer value representing the heuristic, the estimated distance from the current node to end node
+        f: Integer value representing the total cost of the node
+
     """
 
     def __init__(self, parent=None, position=None):
@@ -21,6 +37,12 @@ class Node:
 def aStar(grid, start, end):
     """
     Returns a list of tuples as a path from the given start to the given end in the given grid
+
+    before we get to the Astar  pathing, I take the layout of the Warehouse Floor and set it up to a grid of ones
+    and zeros, (zeros representing occupied space, ones representing a cell already containing an object)
+
+    This grid is generated in antoher function within Floor and then is passed to Astar as the grid value
+
 
     Tying to convert the return to a list of Point objects
     """
@@ -48,7 +70,6 @@ def aStar(grid, start, end):
         # Get the current node
         current_node = open_list[0]
         current_index = 0
-        print(f'current node is: {current_node.position}')
         for index, item in enumerate(open_list):
             if item.f < current_node.f:
                 current_node = item
@@ -113,7 +134,7 @@ def aStar(grid, start, end):
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
-            child.h =((child.position[1] - end_node.position[1]) ** 2)\
+            child.h = ((child.position[1] - end_node.position[1]) ** 2)\
                       + ((child.position[0] - end_node.position[0]) ** 2)
             child.f = child.g + child.h
 
