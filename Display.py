@@ -3,6 +3,15 @@ import Warehouse
 from Point import Point
 
 class Application(tk.Frame):
+    """
+        The Application class is the Master class for the Display portion of the Warehouse simulation
+
+        We use a tkinter Frame here as a container for the rest of the display widgets we will be
+        using in the simulation. We will be able to organize these widgets how we want within this container
+
+        Attributes:
+            master: Parent widget of Application which is tk.Frame
+        """
 
     def __init__(self, master):
         super().__init__(master)
@@ -10,12 +19,20 @@ class Application(tk.Frame):
         master.title('Amazon Warehouse Simulation')
         # Width & Height of Entire Display
         master.geometry("1000x530")
+        # Background color of Frame container
         master.config(background='LightSkyBlue4')
-        # Create widgets
+        # Create widgets for display
         self.create_widgets()
 
 
     def create_widgets(self):
+        """
+        First creates a floor grid which will be a container for display objects within the Warehouse
+
+        Then creates a wide variety of widgets for the display and gives them a location in the main display
+        This is where you can edit the size and location of information displayed
+        """
+
         # Floor Grid Display
         self.floor_grid = FloorGrid(master=root, width=500, height=500)
         self.floor_grid.grid(row=0, column=0, rowspan=30, padx=10, pady=10)
@@ -111,11 +128,24 @@ class Application(tk.Frame):
 
 
     def add_item(self, item_list):
+        """
+                ****  NOT USED? ****
+
+        Args:
+            item_list:
+        """
         for i in item_list:
             self.collected_list.insert(tk.END, i)
             self.update()
 
     def new_order(self, order):
+        """
+        Updates the display with new information for the Order what will be fulfilled
+        Clears the previous Order's information first and then updates the information from order
+
+        Args:
+            order: an Order object
+        """
         # Clear order_list first
         self.order_list.delete(0, tk.END)
         # Also clear collected_list
@@ -131,18 +161,45 @@ class Application(tk.Frame):
         self.update()
 
     def update_collected(self, item):
+        """
+        Updates the display with the name of the Item that has just been collected
+
+        Args:
+            item: Item object that has been fulfilled in the Order
+        """
         self.collected_list.insert(tk.END, item)
         self.update()
 
     def update_address(self, address):
+        """
+        Updates the display with the address that the fulfilled Order needs to be sent to
+
+        Args:
+            address: String representing a customer's address
+        """
         self.address_text.set(address)
         self.update()
 
     def update_status(self, status):
+        """
+        Updates the display with the status of an Orders fulfillment
+
+        Args:
+            status: String representing the Order's fulfillment status
+        """
         self.status_text.set(status)
         self.update()
 
     def ticker_update(self, string):
+        """
+        Updates the display's ticker with new information as the Order is being fulfilled
+
+        This is updated for almost all steps of an Order's fulfillment. This replaces our need for a ton
+        of print statements however I am still keeping them for the time being.
+
+        Args:
+            string: String representing some information that will be printed out by the ticker
+        """
         # These strings will be properly formatted within the Warehouse Simulation methods
         self.ticker_text.insert(tk.END, string)
         # Make Scrollbar go to Bottom so we can see most recent Status
@@ -151,6 +208,20 @@ class Application(tk.Frame):
 
 
 class FloorGrid(tk.Canvas):
+    """
+    The FloorGrid class is the Floor layout of the Warehouse visualized for Display
+
+    FloorGrid is  a container for display objects within the Warehouse
+
+    We use a tkinter Canvas here as a container for the rest of the display objects that will be moving
+    around the Floor of the Warehouse in the simulation.
+
+    Attributes:
+        master: Parent widget of Application which is tk.Frame
+        width: int that represents the width of the Warehouse Floor
+        height: int that represents the height of the Warehouse Floor
+        unit_size: The size of each Floor cell
+    """
 
     def __init__(self, master, width, height):
         # Create Tk Canvas with Specified Height / Width
@@ -165,9 +236,15 @@ class FloorGrid(tk.Canvas):
         self.checkered(self, self.unit_size)
         self.populate()
 
-        #self.grid(row=0, column=0)
-    # Create the Grid layout for our display
     def checkered(self, canvas, line_distance):
+        """
+        Draws lines on our canvas to represent a grid on the warehouse floor
+        This is so we can accurately see what is considered one unit in our Display
+
+        Args:
+            canvas: Canvas on which the lines will be drawn onto
+            line_distance: int representing the length of the lines for the grid
+        """
         # Vertical lines at an interval of "line_distance" pixel
         for x in range(line_distance, self.grid_width, line_distance):
             canvas.create_line(x, 0, x, self.grid_height, fill="#476042")
@@ -178,6 +255,16 @@ class FloorGrid(tk.Canvas):
 
     # Animation Methods
     def getDisplayRobot(self, robot_object):
+        """
+        Takes a Robot from Warehouse and finds the Display robot that has the same name
+
+        Args:
+            robot_object: The Robot object that we want to move around on our Display
+
+        Returns:
+             display_bot: The Display robot that has the same names as the Warehouse robot
+
+        """
         display_bot = None
         for bot in self.ROBOT_LIST:
             if bot.name == robot_object.getName():
@@ -186,6 +273,16 @@ class FloorGrid(tk.Canvas):
         return display_bot
 
     def getDisplayShelf(self, shelf_object):
+        """
+        Takes a Shelf from Warehouse and finds the Display shelf that has the same name
+
+        Args:
+            shelf_object: The Shelf object that we want to move around on our Display
+
+        Returns:
+             display_shelf: The Display shelf that has the same names as the Warehouse Shelf
+
+        """
         display_shelf = None
         for shelf in self.SHELF_LIST:
             if shelf.number == shelf_object.getShelfNo():
@@ -194,6 +291,10 @@ class FloorGrid(tk.Canvas):
         return display_shelf
 
     def rotateBelt(self):
+        """
+        Rotates all Display belt objects forward one unit and sorts the list of display belts
+        by the highest y coordinate value
+        """
         belt_length = len(self.BELT_LIST)
         count = 0
         for belt in self.BELT_LIST:
@@ -210,20 +311,49 @@ class FloorGrid(tk.Canvas):
         self.BELT_LIST.sort(key=lambda belt: -belt.point.y)
 
     def grabBin(self, point):
+        """
+        Creates an Display Bin at the Point location
+
+        Args:
+            point: Point object representing the location the bin should be displayed at
+
+        Returns:
+             A new Display bin object
+        """
         NEW_BIN = Display_Bin(self, point, self.unit_size, 'Bin')
         return NEW_BIN
 
     def createPackage(self, point):
+        """
+        Creates an Display Package at the Point location
+
+        Args:
+            point: Point object representing the location the package should be displayed at
+
+        Returns:
+            A new Display package object
+        """
         NEW_PACKAGE = Display_Package(self, point, self.unit_size, 'Pkg')
         return NEW_PACKAGE
 
     def deleteObject(self, display_object):
+        """
+        Deletes a display object from the Display
+
+        Args:
+            display_object: display object to be removed from the visualization
+        """
         self.delete(display_object.name)
         self.delete(display_object.id)
         self.update()
 
     # Setup Warehouse Display
     def populate(self):
+        """
+        Populates the FloorGrid canvas with all of the display objects within the warehouse
+
+        Creates the Picker, Packer, Dock, Charger, Robot, Belt, and Shelf display objects.
+        """
         # Picker
         self.PICKER = Display_Picker(self, Point(1, 7), self.unit_size, 'Picker')
 
@@ -288,6 +418,17 @@ class FloorGrid(tk.Canvas):
 
 
 class Display_Picker:
+    """
+    The Display_Picker class represents the visual representation of the Picker class in our simulation
+
+    The Display picker will appear as a light blue square that is named "Picker"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the Picker in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
         self.unit_size = unit_size
@@ -304,6 +445,17 @@ class Display_Picker:
 
 
 class Display_Bin:
+    """
+    The Display_Bin class represents the visual representation of the Bin class in our simulation
+
+    The Display bin will appear as a smaller gold rectangle that is named "Bin"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the display object in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
         self.unit_size = unit_size
@@ -321,6 +473,14 @@ class Display_Bin:
         self.canvas.update()
 
     def move_bin(self, point):
+        """
+        Moves the Display bin object up one unit in order for it to move in unison with the Belt that it is on
+
+        This is called the same time that the belt is rotated one unit
+
+        Args:
+            point: Point object representing the location of the Belt that the bin is on top of.
+        """
         # Move Up
         if self.point.x == point.x and self.point.y > point.y:
             self.canvas.move(self.bin, 0, (point.y - self.point.y) * self.unit_size)
@@ -332,6 +492,17 @@ class Display_Bin:
 
 
 class Display_Packer:
+    """
+     The Display_Packer class represents the visual representation of the Packer class in our simulation
+
+     The Display bin will appear as a light green square that is named "Packer"
+
+     Attributes:
+         canvas: The tk.Canvas that this object will be displayed on
+         point: The Point location of the display object in the Warehouse simulation
+         unit_size: int representing the size of the display object
+         name: String representing label on the Display object
+     """
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
         self.unit_size = unit_size
@@ -348,6 +519,17 @@ class Display_Packer:
 
 
 class Display_Package:
+    """
+    The Display_Package class represents the visual representation of the Package class in our simulation
+
+    The Display package will appear as a smaller tan square that is named "Pkg"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the display object in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
         self.unit_size = unit_size
@@ -365,6 +547,14 @@ class Display_Package:
         self.canvas.update()
 
     def move_package(self, point):
+        """
+        Moves the Display package object up one unit in order for it to move in unison with the Belt that it is on
+
+        This is called the same time that the belt is rotated one unit
+
+        Args:
+            point: Point object representing the location of the Belt that the package is on top of.
+        """
         # Move Up
         if self.point.x == point.x and self.point.y > point.y:
             self.canvas.move(self.package, 0, (point.y - self.point.y) * self.unit_size)
@@ -376,6 +566,17 @@ class Display_Package:
 
 
 class Display_Dock:
+    """
+    The Display_Dock class represents the visual representation of the DockArea class in our simulation
+
+    The Display package will appear as large gray square that is named "Dock"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the display object in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
         self.x1 = point.x * unit_size
@@ -390,6 +591,17 @@ class Display_Dock:
 
 
 class Display_Charger:
+    """
+    The Display_Charger class represents the visual representation of the Charger class in our simulation
+
+    The Display chargers will appear as pink circles that are named "C1 - C5"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the display object in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size, name):
         self.point = point
         self.unit_size = unit_size
@@ -408,6 +620,17 @@ class Display_Charger:
 
 
 class Display_Robot:
+    """
+    The Display_Robot class represents the visual representation of the Robot class in our simulation
+
+    The Display Robots will appear as orange squares that are named "A - E"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the display object in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size,  name):
         self.point = point
         self.unit_size = unit_size
@@ -425,6 +648,12 @@ class Display_Robot:
         self.canvas.update()
 
     def move_robot(self, point):
+        """
+        Moves the Display robot to the designated Point location
+
+        Args:
+            point: Point object representing where the robot should move to
+        """
         # Move Left
         if self.point.x > point.x and self.point.y == point.y:
             self.canvas.move(self.robot, (point.x - self.point.x) * self.unit_size, 0)
@@ -457,6 +686,17 @@ class Display_Robot:
 
 
 class Display_Belt:
+    """
+    The Display_Belt class represents the visual representation of the Belt class in our simulation
+
+    The Display Belts will appear as light gray rectangles that are named "B1 - B6"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the display object in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size,  name):
         self.point = point
         self.unit_size = unit_size
@@ -473,6 +713,14 @@ class Display_Belt:
         self.canvas.update()
 
     def move_belt(self, point):
+        """
+        Moves the Display belt to the designated Point location
+
+        If a belt unit is at the end of the belt, it gets moved to the beginning of the belt
+
+        Args:
+            point: Point object representing where the belt should move to
+        """
         # Move Up
         if self.point.x == point.x and self.point.y > point.y:
             self.canvas.move(self.belt, 0, (point.y - self.point.y) * self.unit_size)
@@ -491,6 +739,17 @@ class Display_Belt:
 
 
 class Display_Shelf:
+    """
+    The Display_Shelf class represents the visual representation of the Shelf class in our simulation
+
+    The Display shelves will appear as yellow rectangles that are named "S1 - S20"
+
+    Attributes:
+        canvas: The tk.Canvas that this object will be displayed on
+        point: The Point location of the display object in the Warehouse simulation
+        unit_size: int representing the size of the display object
+        name: String representing label on the Display object
+    """
     def __init__(self, canvas, point, unit_size, name, number):
         self.point = point
         self.unit_size = unit_size
@@ -509,6 +768,12 @@ class Display_Shelf:
         self.canvas.update()
 
     def move_shelf(self, point):
+        """
+         Moves the Display shelf to the designated Point location
+
+         Args:
+             point: Point object representing where the shelf should move to
+         """
         # Move Left
         if self.point.x > point.x and self.point.y == point.y:
             self.canvas.move(self.shelf, (point.x - self.point.x) * self.unit_size, 0)
@@ -539,6 +804,8 @@ class Display_Shelf:
 
         self.canvas.update()
 
+# If the show_animation boolean is True in Warehouse.py,
+# we will create the Tkinter application and run the Warehouse simulation from here
 if Warehouse.show_animation:
     root = tk.Tk()
     App = Application(master=root)
